@@ -12,7 +12,7 @@
 <style>
 /* 
   MODERN NATIVE APP UI DESIGN 
-  Animations, touch-states, fluid layouts, and frosted modals
+  Animations, touch-states, fluid layouts, frosted bottom sheets
 */
 
 :root {
@@ -23,12 +23,12 @@
   --text-soft: #4a4a4a;
   --muted: #8e8e93;
   --line: #e5e5ea;
-  --accent: #007aff;
+  --accent: #0a84ff;
   --hero-a: #ffffff;
   --hero-b: #f0f4fa;
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
   --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
-  --shadow-modal: 0 20px 40px rgba(0,0,0,0.12);
+  --shadow-sheet: 0 -8px 32px rgba(0,0,0,0.1);
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-sm: 12px;
@@ -48,13 +48,12 @@
     --hero-b: #161d27;
     --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
     --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
-    --shadow-modal: 0 20px 40px rgba(0,0,0,0.6);
+    --shadow-sheet: 0 -8px 32px rgba(0,0,0,0.5);
   }
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-/* Hide scrollbars for app-like feel */
 ::-webkit-scrollbar { display: none; }
 html { scrollbar-width: none; }
 
@@ -79,7 +78,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 [hidden] { display: none !important; }
 
-/* Active Touch States for Native Feel */
+/* Active Touch States */
 button:active, .shortcut:active, .event-tile:active, .countdown:active {
   transform: scale(0.97);
   transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
@@ -91,53 +90,45 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pulseRed {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); border-color: rgba(239, 68, 68, 1); }
+  70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); border-color: rgba(239, 68, 68, 1); }
+}
+
+@keyframes pulseOrange {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); border-color: rgba(245, 158, 11, 1); }
+  70% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); border-color: rgba(245, 158, 11, 0.5); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); border-color: rgba(245, 158, 11, 1); }
+}
+
 .animate-in {
   animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
 }
 
-/* Page Layout & Transitions */
-.page-container {
-  position: relative;
-  width: 100%;
-  max-width: 800px;
-  margin: auto;
-  min-height: 100vh;
-}
+/* Standalone Pulses (For seamless UI mutation without re-running entry animations) */
+.pulse-border-red { animation: pulseRed 2.5s infinite; }
+.pulse-border-orange { animation: pulseOrange 2.5s infinite; }
 
-.home-page {
-  padding: 24px 20px 40px;
-  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-  transform-origin: top center;
-}
-.home-page.hidden {
-  opacity: 0;
-  transform: scale(0.94);
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-}
+/* Combined Pulses for Initial Entry */
+.animate-in.pulse-border-red { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards, pulseRed 2.5s infinite 0.6s !important; }
+.animate-in.pulse-border-orange { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards, pulseOrange 2.5s infinite 0.6s !important; }
+
+/* Page Layout */
+.page-container { position: relative; width: 100%; max-width: 800px; margin: auto; min-height: 100vh; }
+.home-page { padding: 24px 20px 40px; transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); transform-origin: top center; }
+.home-page.hidden { opacity: 0; transform: scale(0.94); pointer-events: none; position: absolute; width: 100%; }
 
 .manager-page {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: var(--bg);
-  z-index: 100;
-  overflow-y: auto;
-  padding: 24px 20px 60px;
-  opacity: 0;
-  transform: translateY(30px);
-  pointer-events: none;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 100;
+  overflow-y: auto; padding: 24px 20px 60px; opacity: 0; transform: translateY(30px); pointer-events: none;
   transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.manager-page.active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
+.manager-page.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .manager-inner { max-width: 800px; margin: auto; }
 
-/* Header / Welcome */
+/* Header */
 .welcome { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .greeting { font-size: clamp(24px, 5vw, 32px); font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
 .header-right { display: flex; align-items: center; gap: 12px; }
@@ -146,15 +137,12 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
 .edit-link:hover { color: var(--accent); transform: scale(1.05); }
 .edit-link svg { width: 18px; height: 18px; }
 
-/* Hero Countdown (Compact Two-Column) */
+/* Hero Countdown */
 .countdown {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  padding: 20px 24px; border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
-  box-shadow: var(--shadow-md);
-  border: 1px solid rgba(255,255,255,0.05);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 16px; /* tight spacing to the grid below */
+  padding: 24px; border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+  box-shadow: var(--shadow-md); border: 1px solid rgba(255,255,255,0.05);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 12px; 
 }
 .countdown.urgent { background: linear-gradient(135deg, #fff7ed, #ffedd5); border-color: #fdba74; }
 .countdown.last-day { background: linear-gradient(135deg, #fef2f2, #fee2e2); border-color: #fca5a5; }
@@ -164,47 +152,40 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
 }
 
 .countdown-left { flex: 1; min-width: 0; }
-.event-name { margin: 0 0 2px; font-size: clamp(22px, 4.5vw, 28px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; overflow-wrap: anywhere; }
-.event-meta { color: var(--text-soft); font-size: 13px; font-weight: 600; }
-.countdown-right { display: flex; align-items: baseline; gap: 8px; flex-shrink: 0; text-align: right; }
-.days-number { font-size: clamp(38px, 8vw, 52px); font-weight: 800; letter-spacing: -0.04em; color: var(--accent); line-height: 1; }
-.days-label { font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.event-name { margin: 0 0 4px; font-size: clamp(22px, 4.5vw, 28px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; overflow-wrap: anywhere; }
+.event-meta { color: var(--text-soft); font-size: 14px; font-weight: 600; }
+.countdown-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 2px; flex-shrink: 0; text-align: right; }
+.days-number { font-size: clamp(42px, 8vw, 56px); font-weight: 800; letter-spacing: -0.04em; color: var(--accent); line-height: 1; }
+.days-number.text-word { font-size: clamp(28px, 6vw, 36px); letter-spacing: -0.02em; }
+.days-label { font-size: 11px; font-weight: 800; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
 
-/* Upcoming Events (Bottom Aligned Text) */
-.event-cards {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
+/* Upcoming Events Grid */
+.event-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 32px; }
 .event-tile {
-  display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
-  padding: 16px; border-radius: var(--radius-md);
-  background: var(--panel); box-shadow: var(--shadow-sm);
-  transition: transform 0.2s; border: 1px solid var(--line);
+  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+  padding: 20px; border-radius: var(--radius-lg); background: var(--panel); 
+  box-shadow: var(--shadow-sm); transition: transform 0.2s; border: 1px solid var(--line);
 }
 .event-tile-name { font-size: 16px; font-weight: 700; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .event-tile-bottom { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; gap: 8px; }
-.event-tile-date { font-size: 12px; font-weight: 600; color: var(--text-soft); padding-bottom: 3px; white-space: nowrap; }
-.event-tile-count { display: flex; align-items: baseline; gap: 4px; text-align: right; }
-.event-tile-count strong { font-size: 22px; font-weight: 800; line-height: 1; }
-.event-tile-count small { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.event-tile-date { font-size: 13px; font-weight: 600; color: var(--text-soft); padding-bottom: 2px; white-space: nowrap; }
+.event-tile-count { text-align: right; }
+.event-tile-count strong { font-size: 26px; font-weight: 800; line-height: 1; display: block; }
 
-/* Color classes for numbers */
-.orange { color: #f59e0b; } .red { color: #ef4444; } .blue { color: #3b82f6; } .green { color: #10b981; }
-
+/* Numeric Colors */
+.orange { color: #f59e0b; } .red { color: #ef4444; } .blue { color: #0a84ff; } .green { color: #34c759; }
 .empty-note { padding: 16px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); text-align: center; }
 
 /* Sections */
-.section { margin-top: 32px; }
+.section { margin-top: 16px; }
 .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .section-head h2 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 
-/* Shortcuts (Uniform Squircle Icons) */
-.shortcuts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 16px 8px;
-}
+/* Shortcuts */
+.shortcuts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 8px; }
+@media (min-width: 600px) { .shortcuts { grid-template-columns: repeat(6, 1fr); } }
+@media (min-width: 800px) { .shortcuts { grid-template-columns: repeat(8, 1fr); } }
+
 .shortcut { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; transition: transform 0.2s; }
 .shortcut-icon {
   width: 60px; height: 60px; display: grid; place-items: center;
@@ -215,42 +196,33 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
 .shortcut-label { font-size: 11px; font-weight: 600; color: var(--text-soft); width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .shortcut-add .shortcut-icon svg { color: var(--muted); }
 
-/* MODALS (Frosted Glass, No Dim) */
+/* BOTTOM SHEET MODALS (Frosted Glass, No Dim) */
 .modal-backdrop {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-@media (prefers-color-scheme: dark) {
-  .modal-backdrop { background: rgba(0, 0, 0, 0.05); }
+  display: flex; align-items: flex-end; justify-content: center;
+  background: transparent; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
 }
 .modal-backdrop.active { opacity: 1; pointer-events: auto; }
 .modal-box {
-  background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--radius-lg); padding: 24px;
-  width: calc(100% - 40px); max-width: 400px;
-  box-shadow: var(--shadow-modal);
-  transform: scale(0.95) translateY(10px);
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  background: var(--panel); border: 1px solid var(--line); border-bottom: none;
+  border-radius: 28px 28px 0 0; padding: 12px 24px 44px; /* extra bottom padding for safe area */
+  width: 100%; max-width: 800px; box-shadow: var(--shadow-sheet);
+  transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
 }
-.modal-backdrop.active .modal-box { transform: scale(1) translateY(0); }
+.modal-backdrop.active .modal-box { transform: translateY(0); }
+.modal-drag-handle { width: 40px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 24px; }
 
 /* Forms Inside Modals */
 .modal-box .panel-title { font-size: 20px; font-weight: 800; margin: 0 0 20px; color: var(--text); letter-spacing: -0.02em; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .field label { font-size: 12px; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; }
-.field input { 
-  width: 100%; padding: 14px 16px; border-radius: var(--radius-sm); 
-  border: 1px solid var(--line); background: var(--bg); color: var(--text);
-  font-size: 15px; font-weight: 500; transition: border 0.2s;
-}
+.field input { width: 100%; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 15px; font-weight: 500; transition: border 0.2s; }
 .form-actions { display: flex; gap: 12px; margin-top: 24px; }
 .button { flex: 1; display: inline-flex; align-items: center; justify-content: center; padding: 14px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; background: var(--bg); border: 1px solid var(--line); color: var(--text); transition: transform 0.1s, opacity 0.2s; }
 .button:active { transform: scale(0.96); }
-.button.primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+.button.primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(10,132,255,0.3); }
 .button.danger { color: #ff3b30; background: rgba(255,59,48,0.1); border-color: transparent; }
 .status { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 13px; text-align: center;}
 
@@ -261,7 +233,7 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
 .shortcut-preview-text strong { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .shortcut-preview-text small { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-/* Manager / Settings Page Lists */
+/* Manager Lists */
 .manager-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
 .back-button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--panel); box-shadow: var(--shadow-sm); color: var(--text); transition: transform 0.2s; border: 1px solid var(--line); }
 .back-button svg { width: 20px; height: 20px; margin-right: 2px; }
@@ -271,24 +243,34 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
 .manager-content { display: grid; grid-template-columns: 1fr; gap: 40px; }
 @media(min-width: 768px) { .manager-content { grid-template-columns: 1fr 1fr; } }
 
-.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.list-header .panel-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
-.add-btn-small { padding: 6px 14px; border-radius: 20px; min-height: 0; font-size: 13px; }
+.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 16px;}
+.list-header .panel-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap;}
+.add-btn-small { flex: 1; max-width: 200px; padding: 12px 14px; border-radius: 20px; font-size: 14px; margin: 0; box-shadow: 0 4px 12px rgba(10,132,255,0.3); }
 
+/* Stacked Manage Items */
 .manage-list { display: flex; flex-direction: column; gap: 12px; }
-.manage-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: var(--radius-md); background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
-.manage-item-details strong { display: block; font-size: 15px; font-weight: 700; margin-bottom: 4px; overflow-wrap: anywhere; }
-.manage-item-details small { font-size: 13px; color: var(--text-soft); font-weight: 500; }
-.manage-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
-.manage-item-actions button { padding: 8px 12px; font-size: 13px; border-radius: 8px; min-height: 0; }
+.manage-item { 
+  display: flex; flex-direction: column; align-items: stretch; gap: 16px; 
+  padding: 16px; border-radius: var(--radius-md); 
+  background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.manage-item-top { display: flex; gap: 12px; align-items: center; overflow: hidden; }
+.manage-item-details { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.manage-item-details strong { font-size: 16px; font-weight: 700; overflow-wrap: anywhere; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.manage-item-details small { font-size: 13px; color: var(--text-soft); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.manage-item-actions { display: flex; gap: 12px; }
+.manage-item-actions button { 
+  flex: 1; padding: 12px; font-size: 14px; font-weight: 700; 
+  border-radius: 10px; background: var(--bg); border: 1px solid var(--line); color: var(--text); min-height: 0;
+}
+.manage-item-actions button.danger { background: rgba(255,59,48,0.1); color: #ff3b30; border-color: transparent; }
+@media (prefers-color-scheme: dark) {
+  .manage-item-actions button { background: #2c2c2e; border-color: #3a3a3c; }
+  .manage-item-actions button.danger { background: rgba(255,69,58,0.15); }
+}
 
-/* Responsive adjustments */
 @media (max-width: 500px) {
   .event-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .shortcuts { grid-template-columns: repeat(4, 1fr); }
-  .manage-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .manage-item-actions { width: 100%; }
-  .manage-item-actions button { flex: 1; }
 }
 </style>
 </head>
@@ -302,9 +284,7 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
     <section class="welcome animate-in" style="animation-delay: 0s">
       <div id="greeting" class="greeting">Hello</div>
       <div class="header-right">
-        <div id="dateLabel" class="date-label-text"></div>
         <button class="edit-link" id="openSettings" type="button" aria-label="Settings">
-          <!-- Gear Icon -->
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -313,7 +293,7 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
       </div>
     </section>
 
-    <!-- Hero Countdown (Two Column) -->
+    <!-- Hero Countdown -->
     <section id="countdown" class="countdown animate-in" style="animation-delay: 0.1s" aria-live="polite">
       <div class="countdown-left">
         <div id="eventName" class="event-name">Loading...</div>
@@ -325,14 +305,14 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
       </div>
     </section>
 
-    <!-- Event Cards Grid (No Header) -->
+    <!-- Event Cards Grid -->
     <section id="allEventsSection" hidden>
       <div id="eventCards" class="event-cards"></div>
     </section>
 
     <!-- Shortcuts -->
     <section class="section">
-      <div class="section-head animate-in" style="animation-delay: 0.3s">
+      <div class="section-head animate-in" style="animation-delay: 0.2s" id="shortcutSectionHeader">
         <h2>Shortcuts</h2>
       </div>
       <nav class="shortcuts" id="shortcutGrid" aria-label="Quick access shortcuts"></nav>
@@ -344,7 +324,7 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
     <div class="manager-inner">
       <header class="manager-header">
         <button class="back-button" id="backHome" type="button" aria-label="Back to homepage">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path><path d="M9 12h12"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
         </button>
         <div>
           <h1 class="manager-title">Settings</h1>
@@ -381,9 +361,10 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
     </div>
   </main>
 
-  <!-- EVENT MODAL -->
+  <!-- BOTTOM SHEET EVENT MODAL -->
   <div id="eventModal" class="modal-backdrop">
     <div class="modal-box">
+      <div class="modal-drag-handle"></div>
       <h2 class="panel-title" id="formTitle">Add Event</h2>
       <form id="eventForm" novalidate>
         <div class="field">
@@ -403,9 +384,10 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
     </div>
   </div>
 
-  <!-- SHORTCUT MODAL -->
+  <!-- BOTTOM SHEET SHORTCUT MODAL -->
   <div id="shortcutModal" class="modal-backdrop">
     <div class="modal-box">
+      <div class="modal-drag-handle"></div>
       <h2 class="panel-title" id="shortcutFormTitle">Add Shortcut</h2>
       <form id="shortcutForm" novalidate>
         <div class="field">
@@ -454,7 +436,7 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const EVENTS_KEY = "countdownHome.events.v3"; // Version bumped for simple layout
+  const EVENTS_KEY = "countdownHome.events.v3";
   const OLD_EVENTS_KEY = "countdownHome.events.v2";
   const SHORTCUTS_KEY = "countdownHome.shortcuts.v1";
   const FIREBASE_PATH = "homepageData";
@@ -467,6 +449,9 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
   let lastUpdateTimestamp = 0; 
   let editingId = null;
   let editingShortcutId = null;
+  
+  // Track initial render to prevent entry animations on seamless background syncs
+  let isInitialRender = true; 
 
   /* Utilities */
   function escapeHTML(value) { return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]); }
@@ -485,43 +470,50 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
     const [todayYear, todayMonth, todayDay] = dateToday().split("-").map(Number);
     return Math.round((Date.UTC(year, month - 1, day) - Date.UTC(todayYear, todayMonth - 1, todayDay)) / 86400000);
   }
-  function formatDate(value) {
+  
+  function formatDateFull(value) {
     const [year, month, day] = value.split("-").map(Number);
     return new Date(year, month - 1, day, 12).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
   }
 
+  function formatDateShort(value) {
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day, 12).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  }
+
   /* Icons */
-  function svgIcon(name, color = "currentColor") {
+  function svgIcon(name) {
     const icons = {
-      google: `<svg viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.7c3.9-3.6 6-8.9 6-15.5Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.9l-6.7-5.1c-1.8 1.2-4.1 2-6.8 2-5.2 0-9.7-3.5-11.3-8.2H5.8v5.3C9.2 39.6 16 44 24 44Z"/><path fill="#FBBC05" d="M12.7 27.8a12 12 0 0 1 0-7.6v-5.3H5.8a20 20 0 0 0 0 18.2l6.9-5.3Z"/><path fill="#EA4335" d="M24 12.2c3 0 5.7 1 7.8 3.1l5.9-5.9C34.1 6 29.5 4 24 4 16 4 9.2 8.4 5.8 14.9l6.9 5.3c1.6-4.7 6.1-8 11.3-8Z"/></svg>`,
-      youtube: `<svg viewBox="0 0 48 48"><rect x="3" y="9" width="42" height="30" rx="8" fill="#FF0033"/><path d="M20 17v14l12-7-12-7Z" fill="#fff"/></svg>`,
-      gmail: `<svg viewBox="0 0 48 48"><path fill="#4285F4" d="M6 38V13l6-4 6 4v25H6Z"/><path fill="#34A853" d="M18 38V13l6 5 6-5v25H18Z"/><path fill="#EA4335" d="M6 13 24 27 42 13V8L24 22 6 8v5Z"/><path fill="#FBBC05" d="M30 38V13l6-4 6 4v25H30Z"/><path fill="#C5221F" d="M30 13 42 8v5L30 22V13Z"/></svg>`,
-      amazon: `<svg viewBox="0 0 48 48"><path fill="#232F3E" d="M8 7h32v27H8z"/><path fill="#fff" d="M13 13h22v3H13zm0 6h22v3H13zm0 6h14v3H13z"/><path fill="#FF9900" d="M10 36c9 7 20 7 29 0l-2-3c-8 5-17 5-25 0l-2 3Z"/><path fill="#FF9900" d="m34 32 7 2-4 6-3-8Z"/></svg>`,
-      flipkart: `<svg viewBox="0 0 48 48"><path fill="#2874F0" d="M12 5h24v38H12z"/><path fill="#FFE500" d="M17 12h14v5H17zm-2 8h18v15H15z"/><path fill="#2874F0" d="M20 23h8v7h-8z"/></svg>`,
-      assamcareer: `<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="10" fill="#146C43"/><path fill="#fff" d="M24 7 39 15v18L24 41 9 33V15L24 7Z"/><path fill="#146C43" d="M24 12 34 18v12l-10 6-10-6V18l10-6Z"/><path fill="#F4D35E" d="M18 20h12v3H18zm0 5h12v3H18z"/></svg>`,
+      google: `<svg viewBox="-3 0 262 262" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid"><path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" fill="#4285F4"/><path d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1" fill="#34A853"/><path d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782" fill="#FBBC05"/><path d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251" fill="#EB4335"/></svg>`,
+      youtube: `<svg viewBox="0 -7 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g transform="translate(-200.000000, -368.000000)" fill="#CE1312"><path d="M219.044,391.269916 L219.0425,377.687742 L232.0115,384.502244 L219.044,391.269916 Z M247.52,375.334163 C247.52,375.334163 247.0505,372.003199 245.612,370.536366 C243.7865,368.610299 241.7405,368.601235 240.803,368.489448 C234.086,368 224.0105,368 224.0105,368 L223.9895,368 C223.9895,368 213.914,368 207.197,368.489448 C206.258,368.601235 204.2135,368.610299 202.3865,370.536366 C200.948,372.003199 200.48,375.334163 200.48,375.334163 C200.48,375.334163 200,379.246723 200,383.157773 L200,386.82561 C200,390.73817 200.48,394.64922 200.48,394.64922 C200.48,394.64922 200.948,397.980184 202.3865,399.447016 C204.2135,401.373084 206.612,401.312658 207.68,401.513574 C211.52,401.885191 224,402 224,402 C224,402 234.086,401.984894 240.803,401.495446 C241.7405,401.382148 243.7865,401.373084 245.612,399.447016 C247.0505,397.980184 247.52,394.64922 247.52,394.64922 C247.52,394.64922 248,390.73817 248,386.82561 L248,383.157773 C248,379.246723 247.52,375.334163 247.52,375.334163 L247.52,375.334163 Z"></path></g></svg>`,
+      gmail: `<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 512 512"><path d="M34.9 448h81.5V250.2L0 163v250.2C0 432.5 15.7 448 34.9 448" style="fill:#4285f4"/><path d="M395.6 448h81.5c19.3 0 34.9-15.7 34.9-34.9V163l-116.4 87.3" style="fill:#34a853"/><path d="M395.6 99v151.3L512 163v-46.5c0-43.2-49.3-67.8-83.8-41.9" style="fill:#fbbc04"/><path d="M116.4 250.2V99L256 203.7 395.6 99v151.3L256 355" style="fill:#ea4335"/><path d="M0 116.4V163l116.4 87.3V99L83.8 74.5C49.2 48.6 0 73.2 0 116.4" style="fill:#c5221f"/></svg>`,
+      amazon: `<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" id="Layer_1" x="0" y="0" version="1.1" viewBox="0 0 512 512"><style>.st0{fill:#f90}.st1{fill-rule:evenodd;clip-rule:evenodd}</style><path d="M443.4 421.5C232.1 522 100.9 437.9 16.9 386.8c-5.2-3.2-14 .8-6.4 9.6C38.6 430.3 130.2 512 249.9 512s191-65.3 199.9-76.7c8.8-11.3 2.5-17.6-6.4-13.8m59.3-32.8c-5.7-7.4-34.5-8.8-52.7-6.5-18.2 2.2-45.5 13.3-43.1 19.9 1.2 2.5 3.7 1.4 16.2.3 12.5-1.2 47.6-5.7 54.9 3.9s-11.2 55.4-14.6 62.8c-3.3 7.4 1.2 9.3 7.4 4.4 6.1-4.9 17-17.7 24.4-35.7 7.4-18.2 11.8-43.5 7.5-49.1" class="st0"/><path d="M301.3 216.3c0 26.4.7 48.4-12.7 71.8-10.8 19.1-27.8 30.8-46.9 30.8-26 0-41.2-19.8-41.2-49.1 0-57.7 51.7-68.2 100.7-68.2v14.7zm68.3 165.1c-4.5 4-11 4.3-16 1.6-22.5-18.7-26.5-27.3-38.9-45.2-37.2 37.9-63.4 49.3-111.7 49.3-57 0-101.4-35.2-101.4-105.6 0-55 29.8-92.4 72.2-110.7 36.8-16.2 88.1-19.1 127.4-23.5v-8.8c0-16.1 1.2-35.2-8.2-49.1-8.3-12.5-24.1-17.6-38-17.6-25.8 0-48.9 13.2-54.5 40.7-1.1 6.1-5.6 12.1-11.7 12.4l-65.7-7c-5.5-1.2-11.6-5.7-10.1-14.2C128.2 24 200.1 0 264.5 0c33 0 76 8.8 102 33.7 33 30.8 29.8 71.8 29.8 116.5v105.6c0 31.7 13.1 45.6 25.5 62.8 4.4 6.1 5.3 13.4-.2 18-13.8 11.5-38.4 33-51.9 45z" class="st1"/><path d="M443.4 421.5C232.1 522 100.9 437.9 16.9 386.8c-5.2-3.2-14 .8-6.4 9.6C38.6 430.3 130.2 512 249.9 512s191-65.3 199.9-76.7c8.8-11.3 2.5-17.6-6.4-13.8m59.3-32.8c-5.7-7.4-34.5-8.8-52.7-6.5-18.2 2.2-45.5 13.3-43.1 19.9 1.2 2.5 3.7 1.4 16.2.3 12.5-1.2 47.6-5.7 54.9 3.9s-11.2 55.4-14.6 62.8c-3.3 7.4 1.2 9.3 7.4 4.4 6.1-4.9 17-17.7 24.4-35.7 7.4-18.2 11.8-43.5 7.5-49.1" class="st0"/><path d="M301.3 216.3c0 26.4.7 48.4-12.7 71.8-10.8 19.1-27.8 30.8-46.9 30.8-26 0-41.2-19.8-41.2-49.1 0-57.7 51.7-68.2 100.7-68.2v14.7zm68.3 165.1c-4.5 4-11 4.3-16 1.6-22.5-18.7-26.5-27.3-38.9-45.2-37.2 37.9-63.4 49.3-111.7 49.3-57 0-101.4-35.2-101.4-105.6 0-55 29.8-92.4 72.2-110.7 36.8-16.2 88.1-19.1 127.4-23.5v-8.8c0-16.1 1.2-35.2-8.2-49.1-8.3-12.5-24.1-17.6-38-17.6-25.8 0-48.9 13.2-54.5 40.7-1.1 6.1-5.6 12.1-11.7 12.4l-65.7-7c-5.5-1.2-11.6-5.7-10.1-14.2C128.2 24 200.1 0 264.5 0c33 0 76 8.8 102 33.7 33 30.8 29.8 71.8 29.8 116.5v105.6c0 31.7 13.1 45.6 25.5 62.8 4.4 6.1 5.3 13.4-.2 18-13.8 11.5-38.4 33-51.9 45z" class="st1"/></svg>`,
+      flipkart: `<svg fill="#0080ff" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 94 94" xml:space="preserve" stroke="#0080ff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M89,0H5C2.239,0,0,2.238,0,5v84c0,2.762,2.239,5,5,5h84c2.762,0,5-2.238,5-5V5C94,2.238,91.762,0,89,0z M76.852,18.269 c-0.955,0.16-1.945,0.172-2.918,0.177c-4.057,0.036-6.886,1.977-8.033,5.846c-0.707,2.385-1.09,4.858-1.676,7.565 c1.854,0,3.508-0.009,5.159,0c2.122,0.015,3.089,0.828,2.979,2.934c-0.08,1.598-0.42,3.23-0.942,4.749 c-0.596,1.729-1.923,2.676-3.894,2.581c-1.616-0.075-3.24-0.015-4.988-0.015c-0.78,4.417-1.548,8.729-2.307,13.042 c-0.922,5.237-1.844,10.475-2.754,15.715c-1.64,9.437-7.621,14.732-17.409,14.984c-7.866,0.207-15.743,0.07-23.615,0.06 c-1.683-0.003-2.029-0.5-1.664-2.084c0.515-2.222,1.004-4.446,1.551-6.658c0.487-1.963,1.438-2.7,3.479-2.705 c5.538-0.015,11.075,0.005,16.613-0.005c4.623-0.01,7.023-1.844,7.866-6.328c1.565-8.318,3-16.657,4.485-24.989 c0.047-0.26,0.068-0.524,0.138-1.061c-2.587,0-4.97-0.058-7.345,0.024c-1.462,0.046-2.191-0.536-2.479-1.957 c-0.396-1.965-0.93-3.903-1.377-5.858c-0.418-1.827,0.043-2.433,1.896-2.445c3.684-0.02,7.365-0.005,11.175-0.005 c0.318-1.8,0.607-3.503,0.926-5.2c1.323-7.068,4.514-12.881,11.155-16.284c3.61-1.848,7.503-2.503,11.526-2.266 c2.481,0.144,3.603,1.141,4.209,3.552c0.279,1.105,0.5,2.227,0.664,3.353C79.566,17.005,78.9,17.921,76.852,18.269z"></path> </g> </g></svg>`,
+      assamcareer: `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" preserveAspectRatio="xMidYMid" viewBox="-3 0 262 262"><path fill="#F96316" d="m74.203 33.602 56.952 208.194c3.827 13.991 18.27 22.23 32.254 18.4 13.993-3.833 22.224-18.28 18.394-32.27l-56.962-208.2c-3.83-13.987-18.27-22.228-32.254-18.394C78.607 5.157 70.373 19.609 74.203 33.6z"/><path fill="#B200F8" d="M179.662 32.813 37.046 193.858c-9.621 10.86-8.616 27.464 2.233 37.087 10.85 9.62 27.438 8.617 37.059-2.238L218.954 67.665c9.621-10.86 8.616-27.459-2.233-37.083-10.854-9.63-27.446-8.624-37.059 2.23z"/><path fill="#00B4F2" d="m18.065 122.054 203.387 67.293c13.765 4.552 28.615-2.92 33.167-16.696 4.562-13.774-2.911-28.63-16.681-33.189L34.556 72.175C20.786 67.62 5.942 75.091 1.387 88.867c-4.55 13.775 2.924 28.635 16.682 33.187z"/></svg>`,
       plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`
     };
-    return icons[name] || `<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="${color}"/><text x="24" y="32" font-size="24" font-weight="800" text-anchor="middle" fill="#fff">W</text></svg>`;
+    return icons[name] || "";
   }
 
   const iconColors = ["#E85D75", "#8E44AD", "#3498DB", "#16A085", "#E67E22", "#2C3E50", "#D35400", "#2980B9", "#C0392B", "#27AE60", "#6C5CE7", "#F39C12", "#00A8A8"];
   function getDomain(url) { try { return new URL(url).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; } }
-  function domainIcon(url) {
+  
+  function domainIconData(url) {
     const domain = getDomain(url);
     let hash = 0; for (let i = 0; i < domain.length; i++) hash = ((hash << 5) - hash) + domain.charCodeAt(i);
     const color = iconColors[Math.abs(hash) % iconColors.length];
     const parts = domain.split(".");
     const initial = (parts.length > 1 ? parts[parts.length - 2] : parts[0]).charAt(0).toUpperCase() || "W";
-    return { color, html: `<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="14" fill="${color}"/><text x="24" y="32" font-family="system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle" fill="#ffffff">${escapeHTML(initial)}</text></svg>` };
+    return { color, initial };
   }
 
   const defaultShortcuts = [
-    { id: "default-google", name: "Google", url: "https://www.google.com/", icon: "google", color: "#4285F4" },
-    { id: "default-youtube", name: "YouTube", url: "https://www.youtube.com/", icon: "youtube", color: "#FF0033" },
-    { id: "default-assamcareer", name: "AssamCareer", url: "https://assamcareer.com/", icon: "assamcareer", color: "#146C43" },
-    { id: "default-gmail", name: "Gmail", url: "https://mail.google.com/", icon: "gmail", color: "#EA4335" },
-    { id: "default-amazon", name: "Amazon", url: "https://www.amazon.in/", icon: "amazon", color: "#FF9900" },
-    { id: "default-flipkart", name: "Flipkart", url: "https://www.flipkart.com/", icon: "flipkart", color: "#2874F0" }
+    { id: "default-google", name: "Google", url: "https://www.google.com/", icon: "google" },
+    { id: "default-youtube", name: "YouTube", url: "https://www.youtube.com/", icon: "youtube" },
+    { id: "default-assamcareer", name: "AssamCareer", url: "https://assamcareer.com/", icon: "assamcareer" },
+    { id: "default-gmail", name: "Gmail", url: "https://mail.google.com/", icon: "gmail" },
+    { id: "default-amazon", name: "Amazon", url: "https://www.amazon.in/", icon: "amazon" },
+    { id: "default-flipkart", name: "Flipkart", url: "https://www.flipkart.com/", icon: "flipkart" }
   ];
 
   /* Data Normalization */
@@ -550,7 +542,7 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
   function saveEvents() { try { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); pushToFirebase(); return true; } catch { return false; } }
   function saveShortcuts() { try { localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(customShortcuts)); pushToFirebase(); return true; } catch { return false; } }
 
-  // Sync happens completely silently in background
+  // Sync happens completely silently in background, mutating seamlessly
   function initFirebaseSync() {
     onValue(ref(db, FIREBASE_PATH), (snapshot) => {
       const data = snapshot.val();
@@ -560,6 +552,7 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
           events = normalizeEvents(data.events || []); customShortcuts = normalizeShortcuts(data.shortcuts || []);
           lastUpdateTimestamp = remoteTimestamp;
           localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(customShortcuts)); localStorage.setItem('syncTimestamp', lastUpdateTimestamp.toString());
+          
           renderHome(); if ($("managerPage").classList.contains("active")) { renderManage(); renderShortcutSettings(); }
         } else if (lastUpdateTimestamp > remoteTimestamp) { pushToFirebase(); }
       } else if (events.length > 0 || customShortcuts.length > 0) { pushToFirebase(); }
@@ -572,14 +565,17 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
     const url = normalizeUrl(rawUrl);
     const customName = $("shortcutNameInput").value.trim();
     if (!url) {
-      $("shortcutPreviewIcon").innerHTML = domainIcon("https://example.com").html;
+      $("shortcutPreviewIcon").style.background = 'var(--bg)';
+      $("shortcutPreviewIcon").innerHTML = `<svg viewBox="0 0 48 48"><text x="24" y="32" font-size="24" font-weight="800" text-anchor="middle" fill="var(--muted)">W</text></svg>`;
       $("shortcutPreviewName").textContent = customName || "Website preview";
       $("shortcutPreviewDomain").textContent = "Enter a valid website URL";
       return;
     }
     const domain = getDomain(url);
-    const icon = domainIcon(url);
-    $("shortcutPreviewIcon").innerHTML = icon.html;
+    const { color, initial } = domainIconData(url);
+    
+    $("shortcutPreviewIcon").style.background = color;
+    $("shortcutPreviewIcon").innerHTML = `<span style="color:#ffffff; font-size: 22px; font-weight:800; font-family:sans-serif;">${escapeHTML(initial)}</span>`;
     $("shortcutPreviewName").textContent = customName || domain;
     $("shortcutPreviewDomain").textContent = domain;
   }
@@ -588,19 +584,34 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
 
   /* UI Rendering */
   function renderShortcuts() {
-    const arr = [...defaultShortcuts, ...customShortcuts.map(s => ({ ...s, icon: "domain" }))];
-    $("shortcutGrid").innerHTML = arr.map((s, i) => `
-      <a class="shortcut animate-in" style="animation-delay: ${0.3 + (i * 0.03)}s" href="${escapeHTML(s.url)}" target="_blank" rel="noopener">
-        <span class="shortcut-icon">${s.icon === "domain" ? domainIcon(s.url).html : svgIcon(s.icon, s.color)}</span>
-        <span class="shortcut-label">${escapeHTML(s.name)}</span>
-      </a>
-    `).join("") + `
-      <button class="shortcut shortcut-add animate-in" style="animation-delay: ${0.3 + (arr.length * 0.03)}s" id="addShortcutTile" type="button">
+    const arr = [...defaultShortcuts, ...customShortcuts.map(s => ({ ...s, isCustom: true }))];
+    const anim = isInitialRender ? 'animate-in' : '';
+    const getDelay = (i) => isInitialRender ? `style="animation-delay: ${0.2 + (i * 0.03)}s"` : '';
+
+    $("shortcutGrid").innerHTML = arr.map((s, i) => {
+      if (s.isCustom) {
+        const { color, initial } = domainIconData(s.url);
+        return `
+          <a class="shortcut ${anim}" ${getDelay(i)} href="${escapeHTML(s.url)}" target="_blank" rel="noopener">
+            <span class="shortcut-icon" style="background: ${color}; color: #ffffff; font-size: 28px; font-weight: 800; border: none; box-shadow: 0 4px 12px ${color}40;">${escapeHTML(initial)}</span>
+            <span class="shortcut-label">${escapeHTML(s.name)}</span>
+          </a>
+        `;
+      } else {
+        return `
+          <a class="shortcut ${anim}" ${getDelay(i)} href="${escapeHTML(s.url)}" target="_blank" rel="noopener">
+            <span class="shortcut-icon">${svgIcon(s.icon)}</span>
+            <span class="shortcut-label">${escapeHTML(s.name)}</span>
+          </a>
+        `;
+      }
+    }).join("") + `
+      <button class="shortcut shortcut-add ${anim}" ${getDelay(arr.length)} id="addShortcutTile" type="button">
         <span class="shortcut-icon">${svgIcon("plus")}</span><span class="shortcut-label">Add</span>
       </button>`;
     
     $("addShortcutTile").addEventListener("click", () => { 
-      openShortcutModal(); $("shortcutNameInput").focus(); 
+      resetShortcutForm(); openShortcutModal(); $("shortcutNameInput").focus(); 
     });
   }
 
@@ -608,40 +619,82 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
     const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
     const upcoming = sorted.filter(e => dayDiff(e.date) >= 0);
     const hero = $("countdown");
-    hero.classList.remove("urgent", "last-day", "empty-state");
+    const daysNumEl = $("daysNumber");
+    const daysLabEl = $("daysLabel");
 
     if (upcoming[0]) {
       const n = dayDiff(upcoming[0].date);
-      $("eventName").textContent = upcoming[0].name; $("eventMeta").textContent = `${formatDate(upcoming[0].date)}`;
-      $("daysNumber").textContent = n === 0 ? "Today" : n; $("daysLabel").textContent = n === 0 ? "EVENT DAY" : n === 1 ? "DAY LEFT" : "DAYS LEFT";
-      $("daysNumber").style.color = n === 0 ? "#ef4444" : n <= 1 ? "#f59e0b" : n <= 7 ? "#ef4444" : n <= 30 ? "#3b82f6" : "#10b981";
-      if (n <= 1) { hero.classList.add("urgent"); if (n === 0) hero.classList.add("last-day"); }
+      $("eventName").textContent = upcoming[0].name; 
+      $("eventMeta").textContent = `${formatDateFull(upcoming[0].date)}`;
+      
+      let urgentClass = "", pulseClass = "";
+
+      if (n === 0) {
+        daysNumEl.textContent = "Today";
+        daysNumEl.classList.add("text-word");
+        daysLabEl.hidden = true;
+        daysNumEl.style.color = "#ef4444";
+        urgentClass = "urgent last-day";
+        pulseClass = "pulse-border-red";
+      } else if (n === 1) {
+        daysNumEl.textContent = "Tomorrow";
+        daysNumEl.classList.add("text-word");
+        daysLabEl.hidden = true;
+        daysNumEl.style.color = "#f59e0b";
+        urgentClass = "urgent";
+        pulseClass = "pulse-border-orange";
+      } else {
+        daysNumEl.textContent = n;
+        daysNumEl.classList.remove("text-word");
+        daysLabEl.textContent = "DAYS LEFT";
+        daysLabEl.hidden = false;
+        daysNumEl.style.color = n <= 7 ? "#ef4444" : n <= 30 ? "#0a84ff" : "#34c759";
+        if (n <= 7) urgentClass = "urgent";
+      }
+
+      hero.className = `countdown ${urgentClass} ${pulseClass} ${isInitialRender ? 'animate-in' : ''}`;
+      hero.style.animationDelay = isInitialRender ? "0.1s" : "0s";
       hero.removeAttribute("tabindex"); hero.removeAttribute("role");
     } else {
       $("eventName").textContent = events.length ? "No upcoming events" : "Add a countdown";
       $("eventMeta").textContent = events.length ? "All dates passed." : "Tap here to begin.";
-      $("daysNumber").textContent = "—"; $("daysLabel").textContent = "DAYS LEFT"; $("daysNumber").style.color = "var(--accent)";
-      hero.classList.add("empty-state"); hero.setAttribute("role", "button"); hero.setAttribute("tabindex", "0");
+      daysNumEl.textContent = "—"; daysLabEl.textContent = "DAYS LEFT"; daysNumEl.style.color = "var(--accent)";
+      daysNumEl.classList.remove("text-word"); daysLabEl.hidden = false;
+      hero.className = `countdown empty-state ${isInitialRender ? 'animate-in' : ''}`;
+      hero.style.animationDelay = isInitialRender ? "0.1s" : "0s";
+      hero.setAttribute("role", "button"); hero.setAttribute("tabindex", "0");
     }
 
     const rest = upcoming.slice(1);
     $("allEventsSection").hidden = !rest.length;
+    
     $("eventCards").innerHTML = rest.map((e, i) => {
       const n = dayDiff(e.date);
-      const color = n <= 1 ? "orange" : n <= 7 ? "red" : n <= 30 ? "blue" : "green";
+      const isToday = n === 0;
+      const isTomorrow = n === 1;
+      
+      let pulseCls = "";
+      if (isToday) pulseCls = "pulse-border-red";
+      else if (isTomorrow) pulseCls = "pulse-border-orange";
+      
+      const color = isToday ? "orange" : n <= 7 ? "red" : n <= 30 ? "blue" : "green";
+      
+      const animCls = isInitialRender ? "animate-in" : "";
+      const delayStyle = isInitialRender ? `style="animation-delay: ${0.1 + (i * 0.05)}s"` : "";
+
       return `
-        <article class="event-tile animate-in" style="animation-delay: ${0.2 + (i * 0.05)}s">
+        <article class="event-tile ${animCls} ${pulseCls}" ${delayStyle}>
           <div class="event-tile-name">${escapeHTML(e.name)}</div>
           <div class="event-tile-bottom">
-            <div class="event-tile-date">${escapeHTML(formatDate(e.date))}</div>
+            <div class="event-tile-date">${escapeHTML(formatDateShort(e.date))}</div>
             <div class="event-tile-count">
-              <strong class="${color}">${n === 0 ? "Today" : n}</strong>
-              <small>${n === 0 ? "TODAY" : n === 1 ? "DAY LEFT" : "DAYS LEFT"}</small>
+              <strong class="${color}">${n}</strong>
             </div>
           </div>
         </article>
       `;
     }).join("");
+    
     renderShortcuts();
   }
 
@@ -649,9 +702,11 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
   function renderManage() {
     $("manageList").innerHTML = events.length ? [...events].sort((a,b)=>a.date.localeCompare(b.date)).map(e => `
       <div class="manage-item">
-        <div class="manage-item-details">
-          <strong>${escapeHTML(e.name)}</strong>
-          <small>${escapeHTML(formatDate(e.date))}${dayDiff(e.date) < 0 ? " (Past)" : ""}</small>
+        <div class="manage-item-top">
+          <div class="manage-item-details">
+            <strong>${escapeHTML(e.name)}</strong>
+            <small>${escapeHTML(formatDateFull(e.date))}${dayDiff(e.date) < 0 ? " (Past)" : ""}</small>
+          </div>
         </div>
         <div class="manage-item-actions">
           <button class="button" data-edit="${e.id}">Edit</button>
@@ -660,33 +715,41 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
       </div>
     `).join("") : `<div class="empty-note">No countdowns yet.</div>`;
   }
+  
   function renderShortcutSettings() {
-    $("shortcutSettingsList").innerHTML = customShortcuts.length ? customShortcuts.map(s => `
-      <div class="manage-item">
-        <div style="display:flex; gap:12px; align-items:center; overflow:hidden;">
-          <div style="flex-shrink:0; width:36px;height:36px;">${domainIcon(s.url).html}</div>
-          <div class="manage-item-details" style="min-width:0;">
-            <strong style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(s.name)}</strong>
-            <small style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${escapeHTML(getDomain(s.url))}</small>
+    $("shortcutSettingsList").innerHTML = customShortcuts.length ? customShortcuts.map(s => {
+      const { color, initial } = domainIconData(s.url);
+      return `
+        <div class="manage-item">
+          <div class="manage-item-top">
+            <div style="flex-shrink:0; width:44px; height:44px; border-radius:12px; background:${color}; color:#fff; display:grid; place-items:center; font-size:22px; font-weight:800;">${escapeHTML(initial)}</div>
+            <div class="manage-item-details">
+              <strong>${escapeHTML(s.name)}</strong>
+              <small>${escapeHTML(getDomain(s.url))}</small>
+            </div>
+          </div>
+          <div class="manage-item-actions">
+            <button class="button" data-s-edit="${s.id}">Edit</button>
+            <button class="button danger" data-s-del="${s.id}">Del</button>
           </div>
         </div>
-        <div class="manage-item-actions">
-          <button class="button" data-s-edit="${s.id}">Edit</button>
-          <button class="button danger" data-s-del="${s.id}">Del</button>
-        </div>
-      </div>
-    `).join("") : `<div class="empty-note">No custom shortcuts.</div>`;
+      `;
+    }).join("") : `<div class="empty-note">No custom shortcuts.</div>`;
   }
 
-  function openManager() { $("homePage").classList.add("hidden"); $("managerPage").classList.add("active"); renderManage(); renderShortcutSettings(); }
-  function closeManager() { $("managerPage").classList.remove("active"); $("homePage").classList.remove("hidden"); renderHome(); }
+  function openManager() { $("homePage").classList.add("hidden"); $("managerPage").classList.add("active"); renderManage(); renderShortcutSettings(); window.scrollTo(0, 0);}
+  function closeManager() { $("managerPage").classList.remove("active"); $("homePage").classList.remove("hidden"); renderHome(); window.scrollTo(0, 0);}
 
-  /* Modals Display Logic */
+  /* Bottom Sheet Modals Logic */
   function openEventModal() { $("eventModal").classList.add("active"); }
   function closeEventModal() { $("eventModal").classList.remove("active"); resetEventForm(); }
   
   function openShortcutModal() { $("shortcutModal").classList.add("active"); }
   function closeShortcutModal() { $("shortcutModal").classList.remove("active"); resetShortcutForm(); }
+
+  // Allow clicking outside the modal box to close it
+  $("eventModal").onclick = e => { if(e.target === $("eventModal")) closeEventModal(); };
+  $("shortcutModal").onclick = e => { if(e.target === $("shortcutModal")) closeShortcutModal(); };
 
   /* Event Form */
   function resetEventForm() { editingId = null; $("eventForm").reset(); $("eventDateInput").value = dateToday(); $("formTitle").textContent = "Add Event"; $("saveEvent").textContent = "Save"; $("formStatus").textContent = ""; }
@@ -750,14 +813,27 @@ button:active, .shortcut:active, .event-tile:active, .countdown:active {
   function updateClock() {
     const now = new Date(), hr = now.getHours();
     $("greeting").textContent = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
-    $("dateLabel").textContent = now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+    // We only re-render the time-sensitive cards silently on interval
+    isInitialRender = false;
     renderHome();
   }
 
   /* App Init */
-  load(); $("eventDateInput").value = dateToday(); updateShortcutPreview(); updateClock(); renderManage(); renderShortcutSettings(); renderShortcuts();
+  load(); 
+  $("eventDateInput").value = dateToday(); 
+  updateShortcutPreview(); 
+  updateClock(); // Calls renderHome
+  renderManage(); 
+  renderShortcutSettings(); 
+  renderShortcuts();
+  
   setInterval(updateClock, 60000);
   initFirebaseSync();
+  
+  // Flip initial render flag immediately after first synchronous load 
+  // so that subsequent background fetches from Firebase trigger a seamless mutation.
+  setTimeout(() => { isInitialRender = false; }, 50);
+
 </script>
 </body>
 </html>
