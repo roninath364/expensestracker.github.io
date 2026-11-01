@@ -2,389 +2,441 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f9f9f9">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<meta name="theme-color" content="#f9f9f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131313" media="(prefers-color-scheme: dark)">
 <meta name="description" content="A personal homepage with countdowns and custom shortcuts.">
 <meta http-equiv="Cache-Control" content="max-age=31536000, public, immutable">
 <title>Homepage</title>
 
 <style>
+/* 
+  MODERN NATIVE APP UI DESIGN 
+  Animations, touch-states, fluid layouts, and frosted modals
+*/
+
 :root {
   color-scheme: light;
   --bg: #f9f9f9;
   --panel: #ffffff;
-  --text: #202020;
-  --muted: #777777;
-  --line: #e8e8e8;
-  --accent: #456bd8;
-  --accent-soft: #edf2ff;
-  --hero-a: #edf3ff;
-  --hero-b: #e6edff;
-  --shadow: 0 4px 16px #00000006;
+  --text: #1a1a1a;
+  --text-soft: #4a4a4a;
+  --muted: #8e8e93;
+  --line: #e5e5ea;
+  --accent: #007aff;
+  --hero-a: #ffffff;
+  --hero-b: #f0f4fa;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-modal: 0 20px 40px rgba(0,0,0,0.12);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
     --bg: #131313;
-    --panel: #1c1c1c;
-    --text: #f1f1f1;
-    --muted: #a0a0a0;
-    --line: #303030;
-    --accent: #a9c0ff;
-    --accent-soft: #242d40;
-    --hero-a: #202b40;
-    --hero-b: #1a2334;
-    --shadow: 0 4px 16px #00000020;
+    --panel: #1c1c1e;
+    --text: #f5f5f7;
+    --text-soft: #a1a1a6;
+    --muted: #636366;
+    --line: #2c2c2e;
+    --accent: #0a84ff;
+    --hero-a: #1c1c1e;
+    --hero-b: #161d27;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+    --shadow-modal: 0 20px 40px rgba(0,0,0,0.6);
   }
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* Hide scrollbars for app-like feel */
+::-webkit-scrollbar { display: none; }
+html { scrollbar-width: none; }
 
 body {
   margin: 0;
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   user-select: none;
-  -webkit-touch-callout: none;
+  overflow-x: hidden;
 }
 
-input, select {
-  -webkit-user-select: auto;
-  user-select: auto;
-}
-
+input, select { -webkit-user-select: auto; user-select: auto; }
 button, input, select { font: inherit; }
-
-button {
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-input:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-}
-
-button:focus-visible { outline: none; }
-button:disabled { opacity: .5; cursor: not-allowed; }
+button { cursor: pointer; border: none; background: transparent; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 [hidden] { display: none !important; }
 
-/* Homepage */
-.page { width: 100%; max-width: 1050px; margin: auto; padding: 16px 20px; }
-.welcome { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 8px 0 16px; }
-.greeting { font-size: clamp(20px, 3vw, 24px); font-weight: 850; letter-spacing: -.045em; }
-.welcome p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
-.date-label { flex-shrink: 0; padding-top: 5px; color: var(--muted); font-size: 12px; font-weight: 650; text-align: right; }
+/* Active Touch States for Native Feel */
+button:active, .shortcut:active, .event-tile:active, .countdown:active {
+  transform: scale(0.97);
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-/* Countdown */
+/* Animations */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+/* Page Layout & Transitions */
+.page-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+  min-height: 100vh;
+}
+
+.home-page {
+  padding: 24px 20px 40px;
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: top center;
+}
+.home-page.hidden {
+  opacity: 0;
+  transform: scale(0.94);
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.manager-page {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--bg);
+  z-index: 100;
+  overflow-y: auto;
+  padding: 24px 20px 60px;
+  opacity: 0;
+  transform: translateY(30px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.manager-page.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.manager-inner { max-width: 800px; margin: auto; }
+
+/* Header / Welcome */
+.welcome { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.greeting { font-size: clamp(24px, 5vw, 32px); font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.date-label-text { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.edit-link { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--panel); box-shadow: var(--shadow-sm); color: var(--text-soft); transition: all 0.2s; border: 1px solid var(--line); }
+.edit-link:hover { color: var(--accent); transform: scale(1.05); }
+.edit-link svg { width: 18px; height: 18px; }
+
+/* Hero Countdown (Compact Two-Column) */
 .countdown {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  min-height: 110px; padding: 18px 22px; border: 1px solid var(--line);
-  border-radius: 16px; background: linear-gradient(120deg, var(--hero-a), var(--hero-b));
-  box-shadow: var(--shadow);
+  padding: 20px 24px; border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 16px; /* tight spacing to the grid below */
 }
-.countdown.empty-state { cursor: pointer; }
-.countdown.urgent { border-color: #e59a37; }
-.countdown.last-day { background: linear-gradient(120deg, #fff1d8, #ffe5dc); color: #512b12; }
-.countdown-left { min-width: 0; }
-
-.section-tag { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 10px; font-weight: 850; letter-spacing: .14em; }
-.pulse { width: 7px; height: 7px; border-radius: 50%; background: #4bbd91; }
-
-.sync-status {
-  display: inline-block; margin-left: 8px; width: 6px; height: 6px;
-  border-radius: 50%; background: var(--muted); opacity: 0.5; transition: background 0.3s;
+.countdown.urgent { background: linear-gradient(135deg, #fff7ed, #ffedd5); border-color: #fdba74; }
+.countdown.last-day { background: linear-gradient(135deg, #fef2f2, #fee2e2); border-color: #fca5a5; }
+@media (prefers-color-scheme: dark) {
+  .countdown.urgent { background: linear-gradient(135deg, #2a1608, #3a1c06); border-color: #9a3412; }
+  .countdown.last-day { background: linear-gradient(135deg, #2a0808, #3a0606); border-color: #991b1b; }
 }
-.sync-status.online { background: #4bbd91; }
 
-.event-name { margin: 6px 0 2px; font-size: clamp(18px, 3vw, 24px); font-weight: 850; letter-spacing: -.04em; overflow-wrap: anywhere; }
-.event-meta { color: var(--muted); font-size: 12px; }
-.countdown-right { min-width: 90px; text-align: right; }
-.days-number { color: var(--accent); font-size: clamp(34px, 5vw, 46px); font-weight: 900; line-height: 1; letter-spacing: -.06em; }
-.days-label { margin-top: 4px; color: var(--muted); font-size: 10px; font-weight: 850; letter-spacing: .12em; }
-.expiry-tag { display: inline-block; margin-top: 6px; padding: 3px 8px; border-radius: 6px; background: #ffdf9e; color: #6e3b00; font-size: 10px; font-weight: 900; }
+.countdown-left { flex: 1; min-width: 0; }
+.event-name { margin: 0 0 2px; font-size: clamp(22px, 4.5vw, 28px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.2; overflow-wrap: anywhere; }
+.event-meta { color: var(--text-soft); font-size: 13px; font-weight: 600; }
+.countdown-right { display: flex; align-items: baseline; gap: 8px; flex-shrink: 0; text-align: right; }
+.days-number { font-size: clamp(38px, 8vw, 52px); font-weight: 800; letter-spacing: -0.04em; color: var(--accent); line-height: 1; }
+.days-label { font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
 
-/* Sections */
-.section { margin-top: 20px; }
-.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.section-head h2 { margin: 0; font-size: 15px; letter-spacing: -.02em; }
+/* Upcoming Events (Bottom Aligned Text) */
+.event-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.event-tile {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
+  padding: 16px; border-radius: var(--radius-md);
+  background: var(--panel); box-shadow: var(--shadow-sm);
+  transition: transform 0.2s; border: 1px solid var(--line);
+}
+.event-tile-name { font-size: 16px; font-weight: 700; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.event-tile-bottom { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; gap: 8px; }
+.event-tile-date { font-size: 12px; font-weight: 600; color: var(--text-soft); padding-bottom: 3px; white-space: nowrap; }
+.event-tile-count { display: flex; align-items: baseline; gap: 4px; text-align: right; }
+.event-tile-count strong { font-size: 22px; font-weight: 800; line-height: 1; }
+.event-tile-count small { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
 
-.edit-link { display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0; border: none; border-radius: 0; background: transparent; color: var(--muted); }
-.edit-link svg { width: 16px; height: 16px; }
-
-/* Upcoming events */
-.event-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.event-tile { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
-.event-type-icon { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9px; background: var(--accent-soft); color: var(--accent); font-size: 16px; }
-.event-tile-main { flex: 1; min-width: 0; }
-.event-tile-name { font-weight: 800; overflow-wrap: anywhere; }
-.event-tile-date { margin-top: 2px; color: var(--muted); font-size: 10px; }
-.event-tile-count { min-width: 60px; text-align: right; }
-.event-tile-count strong { display: block; font-size: 16px; }
-.event-tile-count small { color: var(--muted); font-size: 9px; }
-.orange { color: #d97706; } .red { color: #d13e3e; } .blue { color: #4778d5; } .green { color: #24966b; }
+/* Color classes for numbers */
+.orange { color: #f59e0b; } .red { color: #ef4444; } .blue { color: #3b82f6; } .green { color: #10b981; }
 
 .empty-note { padding: 16px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); text-align: center; }
 
-/* Shortcut grid */
-.shortcuts { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; }
-.shortcut { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: 8px 4px; border: 1px solid transparent; border-radius: 14px; color: var(--text); font-size: 11px; font-weight: 700; text-decoration: none; }
-.shortcut-icon { width: 52px; height: 52px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); font-size: 22px; }
-.shortcut-icon svg { width: 26px; height: 26px; }
-.shortcut-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
-.shortcut-add .shortcut-icon { border: 1px dashed var(--muted); background: transparent; box-shadow: none; color: var(--muted); }
-.shortcut-add .shortcut-icon svg { width: 24px; height: 24px; }
+/* Sections */
+.section { margin-top: 32px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-head h2 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 
-/* Full-screen settings */
-.home-page.hidden { display: none; }
-.manager-page { display: none; min-height: 100vh; background: var(--bg); }
-.manager-page.active { display: block; }
-.manager-container { width: 100%; max-width: 900px; margin: auto; padding: 20px 24px 30px; }
-.manager-header { display: flex; align-items: center; gap: 14px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
-.back-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 0; border: none; background: transparent; color: var(--text); font-weight: 700; }
-.back-button svg { width: 18px; height: 18px; }
-.manager-title { margin: 0; font-size: 20px; font-weight: 850; letter-spacing: -.035em; }
-.manager-subtitle { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+/* Shortcuts (Uniform Squircle Icons) */
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 16px 8px;
+}
+.shortcut { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; transition: transform 0.2s; }
+.shortcut-icon {
+  width: 60px; height: 60px; display: grid; place-items: center;
+  border-radius: 18px; background: var(--panel); box-shadow: var(--shadow-sm);
+  font-size: 24px; color: var(--text); border: 1px solid var(--line);
+}
+.shortcut-icon svg { width: 28px; height: 28px; }
+.shortcut-label { font-size: 11px; font-weight: 600; color: var(--text-soft); width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shortcut-add .shortcut-icon svg { color: var(--muted); }
 
-.manager-content { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 24px; padding-top: 24px; }
-.manager-panel { min-width: 0; }
-.panel-title { margin: 0 0 16px; font-size: 15px; font-weight: 800; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.field { display: grid; gap: 6px; }
-.field.full { grid-column: 1 / -1; }
-.field label { font-size: 12px; font-weight: 750; }
-.field input, .field select { width: 100%; min-height: 40px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); }
-.form-actions, .backup-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); font-weight: 700; }
-.button.primary { border-color: var(--accent); background: var(--accent); color: white; }
-.button.danger { border-color: #e7bebe; color: #c33; }
-.status { min-height: 20px; margin: 8px 0 0; color: var(--muted); font-size: 12px; }
-.manage-list { display: grid; gap: 8px; }
-.manage-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
-.manage-item .details { flex: 1; min-width: 0; }
-.manage-item strong { display: block; overflow-wrap: anywhere; }
-.manage-item small { color: var(--muted); }
-.manage-item-actions { display: flex; gap: 6px; }
-.manage-item-actions button { min-height: 32px; padding: 6px 10px; font-size: 12px; }
+/* MODALS (Frosted Glass, No Dim) */
+.modal-backdrop {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+@media (prefers-color-scheme: dark) {
+  .modal-backdrop { background: rgba(0, 0, 0, 0.05); }
+}
+.modal-backdrop.active { opacity: 1; pointer-events: auto; }
+.modal-box {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 24px;
+  width: calc(100% - 40px); max-width: 400px;
+  box-shadow: var(--shadow-modal);
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.modal-backdrop.active .modal-box { transform: scale(1) translateY(0); }
 
-.backup { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
-.backup h3 { margin: 0 0 4px; font-size: 14px; }
-.backup p { margin: 0; color: var(--muted); font-size: 12px; }
+/* Forms Inside Modals */
+.modal-box .panel-title { font-size: 20px; font-weight: 800; margin: 0 0 20px; color: var(--text); letter-spacing: -0.02em; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field label { font-size: 12px; font-weight: 700; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+.field input { 
+  width: 100%; padding: 14px 16px; border-radius: var(--radius-sm); 
+  border: 1px solid var(--line); background: var(--bg); color: var(--text);
+  font-size: 15px; font-weight: 500; transition: border 0.2s;
+}
+.form-actions { display: flex; gap: 12px; margin-top: 24px; }
+.button { flex: 1; display: inline-flex; align-items: center; justify-content: center; padding: 14px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; background: var(--bg); border: 1px solid var(--line); color: var(--text); transition: transform 0.1s, opacity 0.2s; }
+.button:active { transform: scale(0.96); }
+.button.primary { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+.button.danger { color: #ff3b30; background: rgba(255,59,48,0.1); border-color: transparent; }
+.status { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 13px; text-align: center;}
 
-.shortcut-form { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
-.shortcut-preview { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-.shortcut-preview .shortcut-icon { flex-shrink: 0; }
+.shortcut-preview { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg); border: 1px dashed var(--line); border-radius: var(--radius-sm); }
+.shortcut-preview .shortcut-icon { flex-shrink: 0; width: 44px; height: 44px; border-radius: 12px; box-shadow: none; }
+.shortcut-preview .shortcut-icon svg { width: 22px; height: 22px; }
 .shortcut-preview-text { min-width: 0; }
-.shortcut-preview-text strong { display: block; }
-.shortcut-preview-text small { color: var(--muted); overflow-wrap: anywhere; }
-.shortcut-settings-list { display: grid; gap: 8px; }
-.shortcut-settings-item { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
-.shortcut-settings-item .shortcut-icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px; }
-.shortcut-settings-item .shortcut-icon svg { width: 22px; height: 22px; }
-.shortcut-settings-item .details { flex: 1; min-width: 0; }
-.shortcut-settings-item strong { display: block; overflow-wrap: anywhere; }
-.shortcut-settings-item small { color: var(--muted); overflow-wrap: anywhere; }
-.shortcut-settings-actions { display: flex; gap: 6px; }
-.shortcut-settings-actions button { min-height: 32px; padding: 6px 10px; font-size: 12px; }
+.shortcut-preview-text strong { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shortcut-preview-text small { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-/* Responsive */
-@media (max-width: 720px) {
-  .page { padding: 16px; }
-  .welcome { padding: 8px 0 16px; }
-  .shortcuts { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-  .shortcut-icon { width: 56px; height: 56px; }
-  .event-cards { grid-template-columns: 1fr; }
-  .countdown { padding: 16px; }
-  .manager-container { padding: 16px 20px 24px; }
-  .manager-content { grid-template-columns: 1fr; gap: 24px; }
-  .manager-header { padding-bottom: 16px; }
-  .manager-title { font-size: 18px; }
-}
-@media (max-width: 390px) {
-  .welcome { gap: 8px; }
-  .date-label { font-size: 11px; }
-  .countdown { align-items: flex-start; flex-direction: column; }
-  .countdown-right { display: flex; align-items: baseline; gap: 8px; text-align: left; }
-  .days-number { font-size: 32px; }
-  .days-label { margin: 0; }
-  .form-grid { grid-template-columns: 1fr; }
-  .field.full { grid-column: auto; }
-  .manage-item, .shortcut-settings-item { flex-wrap: wrap; }
-  .manage-item-actions, .shortcut-settings-actions { width: 100%; }
-  .manage-item-actions button, .shortcut-settings-actions button { flex: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+/* Manager / Settings Page Lists */
+.manager-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.back-button { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--panel); box-shadow: var(--shadow-sm); color: var(--text); transition: transform 0.2s; border: 1px solid var(--line); }
+.back-button svg { width: 20px; height: 20px; margin-right: 2px; }
+.manager-title { font-size: 24px; font-weight: 800; margin: 0; }
+.manager-subtitle { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
+
+.manager-content { display: grid; grid-template-columns: 1fr; gap: 40px; }
+@media(min-width: 768px) { .manager-content { grid-template-columns: 1fr 1fr; } }
+
+.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.list-header .panel-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+.add-btn-small { padding: 6px 14px; border-radius: 20px; min-height: 0; font-size: 13px; }
+
+.manage-list { display: flex; flex-direction: column; gap: 12px; }
+.manage-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: var(--radius-md); background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.manage-item-details strong { display: block; font-size: 15px; font-weight: 700; margin-bottom: 4px; overflow-wrap: anywhere; }
+.manage-item-details small { font-size: 13px; color: var(--text-soft); font-weight: 500; }
+.manage-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.manage-item-actions button { padding: 8px 12px; font-size: 13px; border-radius: 8px; min-height: 0; }
+
+/* Responsive adjustments */
+@media (max-width: 500px) {
+  .event-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .shortcuts { grid-template-columns: repeat(4, 1fr); }
+  .manage-item { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .manage-item-actions { width: 100%; }
+  .manage-item-actions button { flex: 1; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- HOME PAGE -->
-<main class="page home-page" id="homePage">
-  <section class="welcome">
-    <div>
-      <div id="greeting" class="greeting">Hello there</div>
-      <p>Your goals, one day at a time.</p>
-    </div>
-    <div class="date-label">
-      <div id="dateLabel"></div>
-      <div style="display:flex; justify-content:flex-end; align-items:center; margin-top:2px;">
-        <span style="font-size:9px;">SYNC</span>
-        <span id="syncIndicator" class="sync-status" title="Firebase Sync Status"></span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Countdown -->
-  <section id="countdown" class="countdown" aria-live="polite">
-    <div class="countdown-left">
-      <div class="section-tag"><span class="pulse"></span>NEXT UP</div>
-      <div id="eventName" class="event-name">No event added yet</div>
-      <div id="eventMeta" class="event-meta">Add an exam or event to start counting down.</div>
-      <span id="expiryTag" class="expiry-tag" hidden></span>
-    </div>
-    <div class="countdown-right">
-      <div id="daysNumber" class="days-number">—</div>
-      <div id="daysLabel" class="days-label">DAYS LEFT</div>
-    </div>
-  </section>
-
-  <!-- Upcoming events -->
-  <section id="allEventsSection" class="section" hidden>
-    <div class="section-head">
-      <h2>Other upcoming events</h2>
-      <button class="edit-link" id="manageEvents" type="button" aria-label="Manage events" title="Manage events">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
-      </button>
-    </div>
-    <div id="eventCards" class="event-cards"></div>
-  </section>
-
-  <!-- Shortcuts -->
-  <section class="section">
-    <div class="section-head">
-      <h2>Quick access</h2>
-      <button class="edit-link" id="manageShortcuts" type="button" aria-label="Manage shortcuts" title="Manage shortcuts">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
-      </button>
-    </div>
-    <nav class="shortcuts" id="shortcutGrid" aria-label="Quick access shortcuts"></nav>
-  </section>
-</main>
-
-<!-- FULL-SCREEN SETTINGS PAGE -->
-<main class="manager-page" id="managerPage">
-  <div class="manager-container">
-    <header class="manager-header">
-      <button class="back-button" id="backHome" type="button" aria-label="Back to homepage">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path><path d="M9 12h12"></path></svg>
-        Back
-      </button>
-      <div>
-        <h1 class="manager-title">Settings</h1>
-        <p class="manager-subtitle">Manage your countdowns and shortcuts.</p>
-      </div>
-    </header>
-
-    <div class="manager-content">
-      <!-- EVENTS -->
-      <section class="manager-panel">
-        <h2 class="panel-title" id="formTitle">Add a countdown</h2>
-        <form id="eventForm" novalidate>
-          <div class="form-grid">
-            <div class="field full">
-              <label for="eventNameInput">Event name *</label>
-              <input id="eventNameInput" maxlength="100" required placeholder="e.g. SSC CGL Tier-I" autocomplete="off">
-            </div>
-            <div class="field">
-              <label for="eventDateInput">Date *</label>
-              <input id="eventDateInput" type="date" required>
-            </div>
-            <div class="field">
-              <label for="eventCategoryInput">Category</label>
-              <select id="eventCategoryInput">
-                <option>Exam</option>
-                <option>Event</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button class="button primary" id="saveEvent" type="submit">Add countdown</button>
-            <button class="button" id="cancelEdit" type="button" hidden>Cancel edit</button>
-          </div>
-          <p class="status" id="formStatus" role="status" aria-live="polite"></p>
-        </form>
-
-        <section class="backup">
-          <h3>Backup &amp; restore</h3>
-          <p>Export or import your events and custom shortcuts together.</p>
-          <div class="backup-actions">
-            <button class="button" id="exportBtn" type="button">Export backup</button>
-            <button class="button" id="importBtn" type="button">Import backup</button>
-            <input id="importFile" type="file" accept=".json,application/json" hidden>
-          </div>
-          <p class="status" id="backupStatus" role="status"></p>
-        </section>
-      </section>
-
-      <!-- EVENT LIST -->
-      <section class="manager-panel">
-        <h2 class="panel-title">Your countdowns</h2>
-        <div class="manage-list" id="manageList"></div>
-      </section>
-    </div>
-
-    <!-- SHORTCUT SETTINGS -->
-    <section class="section">
-      <div class="section-head">
-        <h2>Manage shortcuts</h2>
-      </div>
-      <div class="manager-content">
-        <section class="manager-panel">
-          <h3 class="panel-title" id="shortcutFormTitle">Add a shortcut</h3>
-          <form id="shortcutForm" class="shortcut-form" novalidate>
-            <div class="form-grid">
-              <div class="field full">
-                <label for="shortcutNameInput">Shortcut name</label>
-                <input id="shortcutNameInput" maxlength="50" placeholder="e.g. My Website" autocomplete="off">
-              </div>
-              <div class="field full">
-                <label for="shortcutUrlInput">Website URL *</label>
-                <input id="shortcutUrlInput" type="url" placeholder="https://example.com" required autocomplete="url">
-              </div>
-            </div>
-            <div class="shortcut-preview">
-              <div id="shortcutPreviewIcon" class="shortcut-icon" aria-hidden="true"></div>
-              <div class="shortcut-preview-text">
-                <strong id="shortcutPreviewName">Website preview</strong>
-                <small id="shortcutPreviewDomain">example.com</small>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="button primary" id="saveShortcut" type="submit">Add shortcut</button>
-              <button class="button" id="cancelShortcutEdit" type="button" hidden>Cancel edit</button>
-            </div>
-            <p class="status" id="shortcutStatus" role="status" aria-live="polite"></p>
-          </form>
-        </section>
-        <section class="manager-panel">
-          <h3 class="panel-title">Your custom shortcuts</h3>
-          <div class="shortcut-settings-list" id="shortcutSettingsList"></div>
-        </section>
+<div class="page-container">
+  
+  <!-- HOME PAGE -->
+  <main class="home-page" id="homePage">
+    <section class="welcome animate-in" style="animation-delay: 0s">
+      <div id="greeting" class="greeting">Hello</div>
+      <div class="header-right">
+        <div id="dateLabel" class="date-label-text"></div>
+        <button class="edit-link" id="openSettings" type="button" aria-label="Settings">
+          <!-- Gear Icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
       </div>
     </section>
-  </div>
-</main>
 
+    <!-- Hero Countdown (Two Column) -->
+    <section id="countdown" class="countdown animate-in" style="animation-delay: 0.1s" aria-live="polite">
+      <div class="countdown-left">
+        <div id="eventName" class="event-name">Loading...</div>
+        <div id="eventMeta" class="event-meta">...</div>
+      </div>
+      <div class="countdown-right">
+        <div id="daysNumber" class="days-number">—</div>
+        <div id="daysLabel" class="days-label">DAYS LEFT</div>
+      </div>
+    </section>
+
+    <!-- Event Cards Grid (No Header) -->
+    <section id="allEventsSection" hidden>
+      <div id="eventCards" class="event-cards"></div>
+    </section>
+
+    <!-- Shortcuts -->
+    <section class="section">
+      <div class="section-head animate-in" style="animation-delay: 0.3s">
+        <h2>Shortcuts</h2>
+      </div>
+      <nav class="shortcuts" id="shortcutGrid" aria-label="Quick access shortcuts"></nav>
+    </section>
+  </main>
+
+  <!-- FULL-SCREEN SETTINGS PAGE -->
+  <main class="manager-page" id="managerPage">
+    <div class="manager-inner">
+      <header class="manager-header">
+        <button class="back-button" id="backHome" type="button" aria-label="Back to homepage">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path><path d="M9 12h12"></path></svg>
+        </button>
+        <div>
+          <h1 class="manager-title">Settings</h1>
+          <p class="manager-subtitle">Manage countdowns & shortcuts</p>
+        </div>
+      </header>
+
+      <div class="manager-content">
+        <!-- EVENTS LIST -->
+        <section>
+          <div class="list-header">
+            <h2 class="panel-title">Your Events</h2>
+            <button class="button primary add-btn-small" id="openAddEventBtn">+ Add</button>
+          </div>
+          <div class="manage-list" id="manageList"></div>
+        </section>
+
+        <!-- SHORTCUTS & BACKUP -->
+        <section>
+          <div class="list-header">
+            <h2 class="panel-title">Your Shortcuts</h2>
+            <button class="button primary add-btn-small" id="openAddShortcutBtn">+ Add</button>
+          </div>
+          <div class="manage-list" id="shortcutSettingsList" style="margin-bottom:40px;"></div>
+
+          <h2 class="panel-title" style="margin:0 0 16px;">Data Backup</h2>
+          <div style="display:flex; gap:12px;">
+            <button class="button" id="exportBtn" type="button">Export</button>
+            <button class="button" id="importBtn" type="button">Import</button>
+            <input id="importFile" type="file" accept=".json,application/json" hidden>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- EVENT MODAL -->
+  <div id="eventModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h2 class="panel-title" id="formTitle">Add Event</h2>
+      <form id="eventForm" novalidate>
+        <div class="field">
+          <label for="eventNameInput">Event Name</label>
+          <input id="eventNameInput" maxlength="100" required placeholder="e.g. SSC Exam" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="eventDateInput">Date</label>
+          <input id="eventDateInput" type="date" required>
+        </div>
+        <div class="form-actions">
+          <button class="button primary" id="saveEvent" type="submit">Save</button>
+          <button class="button" id="cancelEdit" type="button">Cancel</button>
+        </div>
+        <p class="status" id="formStatus" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- SHORTCUT MODAL -->
+  <div id="shortcutModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h2 class="panel-title" id="shortcutFormTitle">Add Shortcut</h2>
+      <form id="shortcutForm" novalidate>
+        <div class="field">
+          <label for="shortcutNameInput">Name (Optional)</label>
+          <input id="shortcutNameInput" maxlength="50" placeholder="e.g. My Website" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="shortcutUrlInput">Website URL</label>
+          <input id="shortcutUrlInput" type="url" placeholder="https://example.com" required autocomplete="url">
+        </div>
+        
+        <div class="shortcut-preview">
+          <div id="shortcutPreviewIcon" class="shortcut-icon" aria-hidden="true"></div>
+          <div class="shortcut-preview-text">
+            <strong id="shortcutPreviewName">Website preview</strong>
+            <small id="shortcutPreviewDomain">example.com</small>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="button primary" id="saveShortcut" type="submit">Save</button>
+          <button class="button" id="cancelShortcutEdit" type="button">Cancel</button>
+        </div>
+        <p class="status" id="shortcutStatus" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase & Application Logic -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
@@ -402,8 +454,8 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const EVENTS_KEY = "countdownHome.events.v2";
-  const OLD_EVENTS_KEY = "examCountdown.events.v1";
+  const EVENTS_KEY = "countdownHome.events.v3"; // Version bumped for simple layout
+  const OLD_EVENTS_KEY = "countdownHome.events.v2";
   const SHORTCUTS_KEY = "countdownHome.shortcuts.v1";
   const FIREBASE_PATH = "homepageData";
 
@@ -412,39 +464,13 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   let events = [];
   let customShortcuts = [];
   
-  // Track timestamps to resolve Syncs precisely
   let lastUpdateTimestamp = 0; 
   let editingId = null;
   let editingShortcutId = null;
 
-  /* SVG icon utilities */
-  function svgIcon(name, color = "currentColor") {
-    const icons = {
-      google: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M43.6 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.7c3.9-3.6 6-8.9 6-15.5Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.9l-6.7-5.1c-1.8 1.2-4.1 2-6.8 2-5.2 0-9.7-3.5-11.3-8.2H5.8v5.3C9.2 39.6 16 44 24 44Z"/><path fill="#FBBC05" d="M12.7 27.8a12 12 0 0 1 0-7.6v-5.3H5.8a20 20 0 0 0 0 18.2l6.9-5.3Z"/><path fill="#EA4335" d="M24 12.2c3 0 5.7 1 7.8 3.1l5.9-5.9C34.1 6 29.5 4 24 4 16 4 9.2 8.4 5.8 14.9l6.9 5.3c1.6-4.7 6.1-8 11.3-8Z"/></svg>`,
-      youtube: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="9" width="42" height="30" rx="8" fill="#FF0033"/><path d="M20 17v14l12-7-12-7Z" fill="#fff"/></svg>`,
-      gmail: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M6 38V13l6-4 6 4v25H6Z"/><path fill="#34A853" d="M18 38V13l6 5 6-5v25H18Z"/><path fill="#EA4335" d="M6 13 24 27 42 13V8L24 22 6 8v5Z"/><path fill="#FBBC05" d="M30 38V13l6-4 6 4v25H30Z"/><path fill="#C5221F" d="M30 13 42 8v5L30 22V13Z"/></svg>`,
-      amazon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><path fill="#232F3E" d="M8 7h32v27H8z"/><path fill="#fff" d="M13 13h22v3H13zm0 6h22v3H13zm0 6h14v3H13z"/><path fill="#FF9900" d="M10 36c9 7 20 7 29 0l-2-3c-8 5-17 5-25 0l-2 3Z"/><path fill="#FF9900" d="m34 32 7 2-4 6-3-8Z"/></svg>`,
-      flipkart: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><path fill="#2874F0" d="M12 5h24v38H12z"/><path fill="#FFE500" d="M17 12h14v5H17zm-2 8h18v15H15z"/><path fill="#2874F0" d="M20 23h8v7h-8z"/></svg>`,
-      assamcareer: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="10" fill="#146C43"/><path fill="#fff" d="M24 7 39 15v18L24 41 9 33V15L24 7Z"/><path fill="#146C43" d="M24 12 34 18v12l-10 6-10-6V18l10-6Z"/><path fill="#F4D35E" d="M18 20h12v3H18zm0 5h12v3H18z"/></svg>`,
-      plus: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`
-    };
-    return icons[name] || `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="${color}"/><text x="24" y="31" font-size="22" font-weight="800" text-anchor="middle" fill="#fff">W</text></svg>`;
-  }
-
-  const iconColors = ["#E85D75", "#8E44AD", "#3498DB", "#16A085", "#E67E22", "#2C3E50", "#D35400", "#2980B9", "#C0392B", "#27AE60", "#6C5CE7", "#F39C12", "#00A8A8", "#7F8C8D"];
-  function hashString(value) { let hash = 0; for (let i = 0; i < value.length; i++) { hash = ((hash << 5) - hash) + value.charCodeAt(i); hash |= 0; } return Math.abs(hash); }
-  function getDomain(url) { try { return new URL(url).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; } }
-  function domainInitial(domain) { const parts = domain.split("."); const name = parts.length > 1 ? parts[parts.length - 2] : parts[0]; return (name || "W").charAt(0).toUpperCase(); }
-
-  function domainIcon(url) {
-    const domain = getDomain(url);
-    const color = iconColors[hashString(domain) % iconColors.length];
-    const initial = domainInitial(domain);
-    return { color, html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="${color}"/><text x="24" y="31" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="800" fill="#ffffff">${escapeHTML(initial)}</text></svg>` };
-  }
-
+  /* Utilities */
   function escapeHTML(value) { return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]); }
-  function createId() { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); return `${Date.now()}-${Math.random()}`; }
+  function createId() { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`; }
   function dateToday() { const d = new Date(); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, "0"), String(d.getDate()).padStart(2, "0")].join("-"); }
   function validDate(value) {
     if (typeof value !== "string") return false;
@@ -457,13 +483,36 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   function dayDiff(value) {
     const [year, month, day] = value.split("-").map(Number);
     const [todayYear, todayMonth, todayDay] = dateToday().split("-").map(Number);
-    const target = Date.UTC(year, month - 1, day);
-    const today = Date.UTC(todayYear, todayMonth - 1, todayDay);
-    return Math.round((target - today) / 86400000);
+    return Math.round((Date.UTC(year, month - 1, day) - Date.UTC(todayYear, todayMonth - 1, todayDay)) / 86400000);
   }
   function formatDate(value) {
     const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day, 12).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return new Date(year, month - 1, day, 12).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  /* Icons */
+  function svgIcon(name, color = "currentColor") {
+    const icons = {
+      google: `<svg viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11a9.4 9.4 0 0 1-4.1 6.2v5.1h6.7c3.9-3.6 6-8.9 6-15.5Z"/><path fill="#34A853" d="M24 44c5.5 0 10.1-1.8 13.5-4.9l-6.7-5.1c-1.8 1.2-4.1 2-6.8 2-5.2 0-9.7-3.5-11.3-8.2H5.8v5.3C9.2 39.6 16 44 24 44Z"/><path fill="#FBBC05" d="M12.7 27.8a12 12 0 0 1 0-7.6v-5.3H5.8a20 20 0 0 0 0 18.2l6.9-5.3Z"/><path fill="#EA4335" d="M24 12.2c3 0 5.7 1 7.8 3.1l5.9-5.9C34.1 6 29.5 4 24 4 16 4 9.2 8.4 5.8 14.9l6.9 5.3c1.6-4.7 6.1-8 11.3-8Z"/></svg>`,
+      youtube: `<svg viewBox="0 0 48 48"><rect x="3" y="9" width="42" height="30" rx="8" fill="#FF0033"/><path d="M20 17v14l12-7-12-7Z" fill="#fff"/></svg>`,
+      gmail: `<svg viewBox="0 0 48 48"><path fill="#4285F4" d="M6 38V13l6-4 6 4v25H6Z"/><path fill="#34A853" d="M18 38V13l6 5 6-5v25H18Z"/><path fill="#EA4335" d="M6 13 24 27 42 13V8L24 22 6 8v5Z"/><path fill="#FBBC05" d="M30 38V13l6-4 6 4v25H30Z"/><path fill="#C5221F" d="M30 13 42 8v5L30 22V13Z"/></svg>`,
+      amazon: `<svg viewBox="0 0 48 48"><path fill="#232F3E" d="M8 7h32v27H8z"/><path fill="#fff" d="M13 13h22v3H13zm0 6h22v3H13zm0 6h14v3H13z"/><path fill="#FF9900" d="M10 36c9 7 20 7 29 0l-2-3c-8 5-17 5-25 0l-2 3Z"/><path fill="#FF9900" d="m34 32 7 2-4 6-3-8Z"/></svg>`,
+      flipkart: `<svg viewBox="0 0 48 48"><path fill="#2874F0" d="M12 5h24v38H12z"/><path fill="#FFE500" d="M17 12h14v5H17zm-2 8h18v15H15z"/><path fill="#2874F0" d="M20 23h8v7h-8z"/></svg>`,
+      assamcareer: `<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="10" fill="#146C43"/><path fill="#fff" d="M24 7 39 15v18L24 41 9 33V15L24 7Z"/><path fill="#146C43" d="M24 12 34 18v12l-10 6-10-6V18l10-6Z"/><path fill="#F4D35E" d="M18 20h12v3H18zm0 5h12v3H18z"/></svg>`,
+      plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`
+    };
+    return icons[name] || `<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="${color}"/><text x="24" y="32" font-size="24" font-weight="800" text-anchor="middle" fill="#fff">W</text></svg>`;
+  }
+
+  const iconColors = ["#E85D75", "#8E44AD", "#3498DB", "#16A085", "#E67E22", "#2C3E50", "#D35400", "#2980B9", "#C0392B", "#27AE60", "#6C5CE7", "#F39C12", "#00A8A8"];
+  function getDomain(url) { try { return new URL(url).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; } }
+  function domainIcon(url) {
+    const domain = getDomain(url);
+    let hash = 0; for (let i = 0; i < domain.length; i++) hash = ((hash << 5) - hash) + domain.charCodeAt(i);
+    const color = iconColors[Math.abs(hash) % iconColors.length];
+    const parts = domain.split(".");
+    const initial = (parts.length > 1 ? parts[parts.length - 2] : parts[0]).charAt(0).toUpperCase() || "W";
+    return { color, html: `<svg viewBox="0 0 48 48"><rect width="48" height="48" rx="14" fill="${color}"/><text x="24" y="32" font-family="system-ui, sans-serif" font-size="22" font-weight="800" text-anchor="middle" fill="#ffffff">${escapeHTML(initial)}</text></svg>` };
   }
 
   const defaultShortcuts = [
@@ -475,152 +524,49 @@ button:disabled { opacity: .5; cursor: not-allowed; }
     { id: "default-flipkart", name: "Flipkart", url: "https://www.flipkart.com/", icon: "flipkart", color: "#2874F0" }
   ];
 
-  function normalizeEvents(input) {
-    if (!Array.isArray(input)) throw new Error("Events must be a list.");
-    return input.map((event, index) => {
-      if (!event || typeof event !== "object" || typeof event.name !== "string" || !event.name.trim() || !validDate(event.date)) throw new Error(`Invalid event at item ${index + 1}.`);
-      return { id: String(event.id || createId()), name: event.name.trim().slice(0, 100), date: event.date, category: String(event.category).toLowerCase() === "exam" ? "Exam" : "Event" };
-    });
-  }
-
-  function normalizeShortcuts(input) {
-    if (!Array.isArray(input)) throw new Error("Shortcuts must be a list.");
-    return input.map((shortcut, index) => {
-      if (!shortcut || typeof shortcut !== "object" || typeof shortcut.url !== "string") throw new Error(`Invalid shortcut at item ${index + 1}.`);
-      const url = normalizeUrl(shortcut.url);
-      if (!url) throw new Error(`Invalid shortcut URL at item ${index + 1}.`);
-      const domain = getDomain(url);
-      return { id: String(shortcut.id || createId()), name: String(shortcut.name || domain).trim().slice(0, 50) || domain, url };
-    });
-  }
-
-  function normalizeUrl(value) {
-    if (typeof value !== "string") return "";
-    let url = value.trim();
-    if (!url) return "";
+  /* Data Normalization */
+  function normalizeUrl(urlStr) {
+    let url = String(urlStr || "").trim(); if (!url) return "";
     if (!/^https?:\/\//i.test(url)) url = "https://" + url;
-    try {
-      const parsed = new URL(url);
-      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
-      if (!parsed.hostname || !parsed.hostname.includes(".")) return "";
-      return parsed.href;
-    } catch { return ""; }
+    try { const p = new URL(url); return (p.protocol === "http:" || p.protocol === "https:") && p.hostname.includes(".") ? p.href : ""; } catch { return ""; }
+  }
+  function normalizeEvents(arr) {
+    return Array.isArray(arr) ? arr.map(e => ({ id: String(e.id || createId()), name: String(e.name).trim().slice(0, 100), date: e.date })).filter(e => e.name && validDate(e.date)) : [];
+  }
+  function normalizeShortcuts(arr) {
+    return Array.isArray(arr) ? arr.map(s => { const url = normalizeUrl(s.url); return { id: String(s.id || createId()), name: String(s.name || getDomain(url)).trim().slice(0, 50), url }; }).filter(s => s.url) : [];
   }
 
-  /* 1. CACHE LOADING (Synchronous execution) */
+  /* Cache & Sync Logic */
   function load() {
-    try {
-      let rawEvents = localStorage.getItem(EVENTS_KEY);
-      if (rawEvents === null) rawEvents = localStorage.getItem(OLD_EVENTS_KEY);
-      events = rawEvents ? normalizeEvents(JSON.parse(rawEvents)) : [];
-    } catch { events = []; }
-    try {
-      const rawShortcuts = localStorage.getItem(SHORTCUTS_KEY);
-      customShortcuts = rawShortcuts ? normalizeShortcuts(JSON.parse(rawShortcuts)) : [];
-    } catch { customShortcuts = []; }
-    
-    // Check local sync state (defaults to 0 if Cache was cleared)
+    try { let r = localStorage.getItem(EVENTS_KEY); if (!r) r = localStorage.getItem(OLD_EVENTS_KEY); events = r ? normalizeEvents(JSON.parse(r)) : []; } catch { events = []; }
+    try { const r = localStorage.getItem(SHORTCUTS_KEY); customShortcuts = r ? normalizeShortcuts(JSON.parse(r)) : []; } catch { customShortcuts = []; }
     lastUpdateTimestamp = parseInt(localStorage.getItem('syncTimestamp') || '0', 10);
   }
-
-  /* 2. PUSHING DATA TO CACHE + DB (When changes are made locally) */
   function pushToFirebase() {
-    lastUpdateTimestamp = Date.now();
-    localStorage.setItem('syncTimestamp', lastUpdateTimestamp.toString());
-    set(ref(db, FIREBASE_PATH), {
-      events: events,
-      shortcuts: customShortcuts,
-      updatedAt: lastUpdateTimestamp
-    }).catch(console.error);
+    lastUpdateTimestamp = Date.now(); localStorage.setItem('syncTimestamp', lastUpdateTimestamp.toString());
+    set(ref(db, FIREBASE_PATH), { events, shortcuts: customShortcuts, updatedAt: lastUpdateTimestamp }).catch(console.error);
   }
+  function saveEvents() { try { localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); pushToFirebase(); return true; } catch { return false; } }
+  function saveShortcuts() { try { localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(customShortcuts)); pushToFirebase(); return true; } catch { return false; } }
 
-  function saveEvents() {
-    try {
-      localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
-      pushToFirebase();
-      return true;
-    } catch {
-      $("formStatus").textContent = "Storage is unavailable or full.";
-      return false;
-    }
-  }
-
-  function saveShortcuts() {
-    try {
-      localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(customShortcuts));
-      pushToFirebase();
-      return true;
-    } catch {
-      $("shortcutStatus").textContent = "Storage is unavailable or full.";
-      return false;
-    }
-  }
-
-  /* 3. SYNCING FROM FIREBASE (Deferred Background execution) */
+  // Sync happens completely silently in background
   function initFirebaseSync() {
-    const dataRef = ref(db, FIREBASE_PATH);
-    onValue(dataRef, (snapshot) => {
-      $("syncIndicator").classList.add("online");
+    onValue(ref(db, FIREBASE_PATH), (snapshot) => {
       const data = snapshot.val();
-      
       if (data) {
         const remoteTimestamp = data.updatedAt || 0;
-        
-        // CACHE CLEAR SCENARIO: If local timestamp is 0 (cleared), or remote is newer, grab remote Data!
         if (remoteTimestamp > lastUpdateTimestamp || lastUpdateTimestamp === 0) {
-          try {
-            events = normalizeEvents(data.events || []);
-            customShortcuts = normalizeShortcuts(data.shortcuts || []);
-            lastUpdateTimestamp = remoteTimestamp;
-
-            // Save remote data directly back into the freshly cleared local cache
-            localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
-            localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(customShortcuts));
-            localStorage.setItem('syncTimestamp', lastUpdateTimestamp.toString());
-
-            // Seamlessly update UI
-            renderHome();
-            if ($("managerPage").classList.contains("active")) {
-              renderManage();
-              renderShortcutSettings();
-            }
-          } catch (e) {
-            console.error("Firebase sync error:", e);
-          }
-        }
-        // OFFLINE EDIT SCENARIO: Local was edited offline and is newer, push the local changes up to Firebase
-        else if (lastUpdateTimestamp > remoteTimestamp) {
-           pushToFirebase();
-        }
-      } else {
-        // FIRST TIME SCENARIO: DB is empty, initialize it with local cache
-        if (events.length > 0 || customShortcuts.length > 0) {
-           pushToFirebase();
-        }
-      }
+          events = normalizeEvents(data.events || []); customShortcuts = normalizeShortcuts(data.shortcuts || []);
+          lastUpdateTimestamp = remoteTimestamp;
+          localStorage.setItem(EVENTS_KEY, JSON.stringify(events)); localStorage.setItem(SHORTCUTS_KEY, JSON.stringify(customShortcuts)); localStorage.setItem('syncTimestamp', lastUpdateTimestamp.toString());
+          renderHome(); if ($("managerPage").classList.contains("active")) { renderManage(); renderShortcutSettings(); }
+        } else if (lastUpdateTimestamp > remoteTimestamp) { pushToFirebase(); }
+      } else if (events.length > 0 || customShortcuts.length > 0) { pushToFirebase(); }
     });
   }
 
-  /* Shortcut rendering */
-  function getAllShortcuts() { return [...defaultShortcuts, ...customShortcuts.map(shortcut => ({ ...shortcut, icon: "domain" }))]; }
-  function renderShortcutIcon(shortcut) { if (shortcut.icon === "domain") return domainIcon(shortcut.url).html; return svgIcon(shortcut.icon, shortcut.color); }
-  function renderShortcuts() {
-    const grid = $("shortcutGrid");
-    const shortcuts = getAllShortcuts();
-    grid.innerHTML = shortcuts.map(shortcut => `
-      <a class="shortcut" href="${escapeHTML(shortcut.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHTML(shortcut.name)}">
-        <span class="shortcut-icon" aria-hidden="true">${renderShortcutIcon(shortcut)}</span>
-        <span class="shortcut-label">${escapeHTML(shortcut.name)}</span>
-      </a>
-    `).join("") + `
-      <button class="shortcut shortcut-add" id="addShortcutTile" type="button" aria-label="Add shortcut">
-        <span class="shortcut-icon">${svgIcon("plus")}</span>
-        <span class="shortcut-label">Add</span>
-      </button>
-    `;
-    $("addShortcutTile").addEventListener("click", openShortcutSettings);
-  }
-
+  /* Shortcut Preview Rendering */
   function updateShortcutPreview() {
     const rawUrl = $("shortcutUrlInput").value.trim();
     const url = normalizeUrl(rawUrl);
@@ -640,61 +586,58 @@ button:disabled { opacity: .5; cursor: not-allowed; }
   $("shortcutUrlInput").addEventListener("input", updateShortcutPreview);
   $("shortcutNameInput").addEventListener("input", updateShortcutPreview);
 
-  /* Homepage rendering */
-  function sortEvents() { return [...events].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name)); }
-  function dayLabel(number) { if (number === 0) return "TODAY"; if (number === 1) return "1 DAY LEFT"; return `${number} DAYS LEFT`; }
-  function dayValue(number) { return number === 0 ? "Today" : String(number); }
-  function colorClass(number) { if (number <= 1) return "orange"; if (number <= 7) return "red"; if (number <= 30) return "blue"; return "green"; }
-  function renderHome() {
-    const sorted = sortEvents();
-    const upcoming = sorted.filter(event => dayDiff(event.date) >= 0);
-    const next = upcoming[0];
-    const hero = $("countdown");
-    const expiryTag = $("expiryTag");
-    hero.classList.remove("urgent", "last-day", "empty-state");
-    expiryTag.hidden = true;
+  /* UI Rendering */
+  function renderShortcuts() {
+    const arr = [...defaultShortcuts, ...customShortcuts.map(s => ({ ...s, icon: "domain" }))];
+    $("shortcutGrid").innerHTML = arr.map((s, i) => `
+      <a class="shortcut animate-in" style="animation-delay: ${0.3 + (i * 0.03)}s" href="${escapeHTML(s.url)}" target="_blank" rel="noopener">
+        <span class="shortcut-icon">${s.icon === "domain" ? domainIcon(s.url).html : svgIcon(s.icon, s.color)}</span>
+        <span class="shortcut-label">${escapeHTML(s.name)}</span>
+      </a>
+    `).join("") + `
+      <button class="shortcut shortcut-add animate-in" style="animation-delay: ${0.3 + (arr.length * 0.03)}s" id="addShortcutTile" type="button">
+        <span class="shortcut-icon">${svgIcon("plus")}</span><span class="shortcut-label">Add</span>
+      </button>`;
+    
+    $("addShortcutTile").addEventListener("click", () => { 
+      openShortcutModal(); $("shortcutNameInput").focus(); 
+    });
+  }
 
-    if (next) {
-      const number = dayDiff(next.date);
-      $("eventName").textContent = next.name;
-      $("eventMeta").textContent = `${formatDate(next.date)} · ${next.category}`;
-      $("daysNumber").textContent = dayValue(number);
-      $("daysLabel").textContent = number === 0 ? "EVENT DAY" : number === 1 ? "DAY LEFT" : "DAYS LEFT";
-      $("daysNumber").style.color = number === 0 ? "#d13e3e" : number <= 1 ? "#d97706" : number <= 7 ? "#d13e3e" : number <= 30 ? "#4778d5" : "#24966b";
-      if (number <= 1) {
-        hero.classList.add("urgent");
-        expiryTag.hidden = false;
-        expiryTag.textContent = number === 0 ? "EVENT DAY" : "EXPIRY SOON";
-        if (number === 0) hero.classList.add("last-day");
-      }
-      hero.removeAttribute("tabindex");
-      hero.removeAttribute("role");
+  function renderHome() {
+    const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
+    const upcoming = sorted.filter(e => dayDiff(e.date) >= 0);
+    const hero = $("countdown");
+    hero.classList.remove("urgent", "last-day", "empty-state");
+
+    if (upcoming[0]) {
+      const n = dayDiff(upcoming[0].date);
+      $("eventName").textContent = upcoming[0].name; $("eventMeta").textContent = `${formatDate(upcoming[0].date)}`;
+      $("daysNumber").textContent = n === 0 ? "Today" : n; $("daysLabel").textContent = n === 0 ? "EVENT DAY" : n === 1 ? "DAY LEFT" : "DAYS LEFT";
+      $("daysNumber").style.color = n === 0 ? "#ef4444" : n <= 1 ? "#f59e0b" : n <= 7 ? "#ef4444" : n <= 30 ? "#3b82f6" : "#10b981";
+      if (n <= 1) { hero.classList.add("urgent"); if (n === 0) hero.classList.add("last-day"); }
+      hero.removeAttribute("tabindex"); hero.removeAttribute("role");
     } else {
-      $("eventName").textContent = events.length ? "No upcoming events" : "No event added yet";
-      $("eventMeta").textContent = events.length ? "All saved dates have passed. Add a future event." : "Add an exam or event to start counting down.";
-      $("daysNumber").textContent = "—";
-      $("daysLabel").textContent = "DAYS LEFT";
-      $("daysNumber").style.color = "var(--accent)";
-      hero.classList.add("empty-state");
-      hero.setAttribute("role", "button");
-      hero.setAttribute("tabindex", "0");
-      hero.setAttribute("aria-label", "Open event manager");
+      $("eventName").textContent = events.length ? "No upcoming events" : "Add a countdown";
+      $("eventMeta").textContent = events.length ? "All dates passed." : "Tap here to begin.";
+      $("daysNumber").textContent = "—"; $("daysLabel").textContent = "DAYS LEFT"; $("daysNumber").style.color = "var(--accent)";
+      hero.classList.add("empty-state"); hero.setAttribute("role", "button"); hero.setAttribute("tabindex", "0");
     }
 
     const rest = upcoming.slice(1);
     $("allEventsSection").hidden = !rest.length;
-    $("eventCards").innerHTML = rest.map(event => {
-      const number = dayDiff(event.date);
+    $("eventCards").innerHTML = rest.map((e, i) => {
+      const n = dayDiff(e.date);
+      const color = n <= 1 ? "orange" : n <= 7 ? "red" : n <= 30 ? "blue" : "green";
       return `
-        <article class="event-tile">
-          <span class="event-type-icon" aria-hidden="true">${event.category === "Exam" ? "▤" : "▦"}</span>
-          <div class="event-tile-main">
-            <div class="event-tile-name">${escapeHTML(event.name)}</div>
-            <div class="event-tile-date">${escapeHTML(formatDate(event.date))} · ${escapeHTML(event.category)}</div>
-          </div>
-          <div class="event-tile-count">
-            <strong class="${colorClass(number)}">${escapeHTML(dayValue(number))}</strong>
-            <small>${dayLabel(number)}</small>
+        <article class="event-tile animate-in" style="animation-delay: ${0.2 + (i * 0.05)}s">
+          <div class="event-tile-name">${escapeHTML(e.name)}</div>
+          <div class="event-tile-bottom">
+            <div class="event-tile-date">${escapeHTML(formatDate(e.date))}</div>
+            <div class="event-tile-count">
+              <strong class="${color}">${n === 0 ? "Today" : n}</strong>
+              <small>${n === 0 ? "TODAY" : n === 1 ? "DAY LEFT" : "DAYS LEFT"}</small>
+            </div>
           </div>
         </article>
       `;
@@ -702,170 +645,119 @@ button:disabled { opacity: .5; cursor: not-allowed; }
     renderShortcuts();
   }
 
-  /* Manager rendering */
+  /* Manager Logic */
   function renderManage() {
-    const list = $("manageList");
-    if (!events.length) { list.innerHTML = `<div class="empty-note">No countdowns yet. Add your first event.</div>`; return; }
-    list.innerHTML = sortEvents().map(event => `
-      <article class="manage-item">
-        <div class="details">
-          <strong>${escapeHTML(event.name)}</strong>
-          <small>${escapeHTML(formatDate(event.date))} · ${escapeHTML(event.category)}${dayDiff(event.date) < 0 ? " · Past" : ""}</small>
+    $("manageList").innerHTML = events.length ? [...events].sort((a,b)=>a.date.localeCompare(b.date)).map(e => `
+      <div class="manage-item">
+        <div class="manage-item-details">
+          <strong>${escapeHTML(e.name)}</strong>
+          <small>${escapeHTML(formatDate(e.date))}${dayDiff(e.date) < 0 ? " (Past)" : ""}</small>
         </div>
         <div class="manage-item-actions">
-          <button class="button" type="button" data-edit="${escapeHTML(event.id)}">Edit</button>
-          <button class="button danger" type="button" data-delete="${escapeHTML(event.id)}">Delete</button>
+          <button class="button" data-edit="${e.id}">Edit</button>
+          <button class="button danger" data-delete="${e.id}">Del</button>
         </div>
-      </article>
-    `).join("");
+      </div>
+    `).join("") : `<div class="empty-note">No countdowns yet.</div>`;
   }
   function renderShortcutSettings() {
-    const list = $("shortcutSettingsList");
-    if (!customShortcuts.length) { list.innerHTML = `<div class="empty-note">No custom shortcuts yet. Use the Add tile on the homepage to create one.</div>`; return; }
-    list.innerHTML = customShortcuts.map(shortcut => `
-      <article class="shortcut-settings-item">
-        <div class="shortcut-icon">${domainIcon(shortcut.url).html}</div>
-        <div class="details">
-          <strong>${escapeHTML(shortcut.name)}</strong>
-          <small>${escapeHTML(getDomain(shortcut.url))}</small>
+    $("shortcutSettingsList").innerHTML = customShortcuts.length ? customShortcuts.map(s => `
+      <div class="manage-item">
+        <div style="display:flex; gap:12px; align-items:center; overflow:hidden;">
+          <div style="flex-shrink:0; width:36px;height:36px;">${domainIcon(s.url).html}</div>
+          <div class="manage-item-details" style="min-width:0;">
+            <strong style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHTML(s.name)}</strong>
+            <small style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${escapeHTML(getDomain(s.url))}</small>
+          </div>
         </div>
-        <div class="shortcut-settings-actions">
-          <button class="button" type="button" data-shortcut-edit="${escapeHTML(shortcut.id)}">Edit</button>
-          <button class="button danger" type="button" data-shortcut-delete="${escapeHTML(shortcut.id)}">Delete</button>
+        <div class="manage-item-actions">
+          <button class="button" data-s-edit="${s.id}">Edit</button>
+          <button class="button danger" data-s-del="${s.id}">Del</button>
         </div>
-      </article>
-    `).join("");
+      </div>
+    `).join("") : `<div class="empty-note">No custom shortcuts.</div>`;
   }
 
-  /* Full-screen navigation */
-  function openManager() { $("homePage").classList.add("hidden"); $("managerPage").classList.add("active"); renderManage(); renderShortcutSettings(); resetEventForm(); resetShortcutForm(); window.scrollTo(0, 0); }
-  function closeManager() { $("managerPage").classList.remove("active"); $("homePage").classList.remove("hidden"); resetEventForm(); resetShortcutForm(); renderHome(); window.scrollTo(0, 0); }
-  function openShortcutSettings() { openManager(); $("shortcutNameInput").focus(); }
+  function openManager() { $("homePage").classList.add("hidden"); $("managerPage").classList.add("active"); renderManage(); renderShortcutSettings(); }
+  function closeManager() { $("managerPage").classList.remove("active"); $("homePage").classList.remove("hidden"); renderHome(); }
 
-  /* Event Form Logic */
-  function resetEventForm() { editingId = null; $("eventForm").reset(); $("eventDateInput").value = dateToday(); $("formTitle").textContent = "Add a countdown"; $("saveEvent").textContent = "Add countdown"; $("cancelEdit").hidden = true; $("formStatus").textContent = ""; }
-  $("eventForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-    const nameInput = $("eventNameInput"), dateInput = $("eventDateInput"), categoryInput = $("eventCategoryInput"), status = $("formStatus");
-    const name = nameInput.value.trim(), date = dateInput.value, category = categoryInput.value;
-    status.textContent = "";
-    if (!name) { status.textContent = "Please enter an event name."; nameInput.focus(); return; }
-    if (name.length > 100) { status.textContent = "Event name must be 100 characters or fewer."; nameInput.focus(); return; }
-    if (!validDate(date)) { status.textContent = "Please select a valid event date."; dateInput.focus(); return; }
+  /* Modals Display Logic */
+  function openEventModal() { $("eventModal").classList.add("active"); }
+  function closeEventModal() { $("eventModal").classList.remove("active"); resetEventForm(); }
+  
+  function openShortcutModal() { $("shortcutModal").classList.add("active"); }
+  function closeShortcutModal() { $("shortcutModal").classList.remove("active"); resetShortcutForm(); }
 
-    if (editingId) events = events.map(item => item.id === editingId ? { ...item, name, date, category } : item);
-    else events.push({ id: createId(), name, date, category });
-
-    if (saveEvents()) { resetEventForm(); renderManage(); renderHome(); status.textContent = "Countdown saved successfully."; }
-  });
-
-  $("manageList").addEventListener("click", function (event) {
-    const editButton = event.target.closest("[data-edit]"), deleteButton = event.target.closest("[data-delete]");
-    if (editButton) {
-      const item = events.find(event => event.id === editButton.dataset.edit);
-      if (!item) return;
-      editingId = item.id; $("eventNameInput").value = item.name; $("eventDateInput").value = item.date; $("eventCategoryInput").value = item.category;
-      $("formTitle").textContent = "Edit countdown"; $("saveEvent").textContent = "Save changes"; $("cancelEdit").hidden = false; $("formStatus").textContent = "Editing countdown."; $("eventNameInput").focus();
+  /* Event Form */
+  function resetEventForm() { editingId = null; $("eventForm").reset(); $("eventDateInput").value = dateToday(); $("formTitle").textContent = "Add Event"; $("saveEvent").textContent = "Save"; $("formStatus").textContent = ""; }
+  $("openAddEventBtn").onclick = () => { resetEventForm(); openEventModal(); $("eventNameInput").focus(); };
+  
+  $("eventForm").onsubmit = e => {
+    e.preventDefault(); const n = $("eventNameInput").value.trim(), d = $("eventDateInput").value;
+    if (!n || !validDate(d)) return;
+    if (editingId) events = events.map(x => x.id === editingId ? { ...x, name: n, date: d } : x); else events.push({ id: createId(), name: n, date: d });
+    if (saveEvents()) { closeEventModal(); renderManage(); renderHome(); }
+  };
+  
+  $("manageList").onclick = e => {
+    const editBtn = e.target.closest("[data-edit]");
+    const delBtn = e.target.closest("[data-delete]");
+    if (editBtn) {
+      const it = events.find(x => x.id === editBtn.dataset.edit);
+      if (it) { editingId = it.id; $("eventNameInput").value = it.name; $("eventDateInput").value = it.date; $("formTitle").textContent = "Edit Event"; $("saveEvent").textContent = "Update"; openEventModal(); }
     }
-    if (deleteButton) {
-      const item = events.find(event => event.id === deleteButton.dataset.delete);
-      if (!item) return;
-      if (!confirm(`Delete "${item.name}"?`)) return;
-      events = events.filter(event => event.id !== item.id);
-      if (saveEvents()) { renderManage(); renderHome(); $("formStatus").textContent = "Countdown deleted successfully."; }
+    if (delBtn && confirm("Delete event?")) { events = events.filter(x => x.id !== delBtn.dataset.delete); saveEvents(); renderManage(); renderHome(); }
+  };
+  $("cancelEdit").onclick = closeEventModal;
+
+  /* Shortcut Form */
+  function resetShortcutForm() { editingShortcutId = null; $("shortcutForm").reset(); $("shortcutFormTitle").textContent = "Add Shortcut"; $("saveShortcut").textContent = "Save"; $("shortcutStatus").textContent = ""; updateShortcutPreview(); }
+  $("openAddShortcutBtn").onclick = () => { resetShortcutForm(); openShortcutModal(); $("shortcutNameInput").focus(); };
+
+  $("shortcutForm").onsubmit = e => {
+    e.preventDefault(); const raw = $("shortcutUrlInput").value.trim(), url = normalizeUrl(raw), name = $("shortcutNameInput").value.trim() || getDomain(url);
+    if (!url) return;
+    if (editingShortcutId) customShortcuts = customShortcuts.map(x => x.id === editingShortcutId ? { ...x, name, url } : x); else customShortcuts.push({ id: createId(), name, url });
+    if (saveShortcuts()) { closeShortcutModal(); renderShortcutSettings(); renderShortcuts(); }
+  };
+  
+  $("shortcutSettingsList").onclick = e => {
+    const editBtn = e.target.closest("[data-s-edit]");
+    const delBtn = e.target.closest("[data-s-del]");
+    if (editBtn) {
+      const it = customShortcuts.find(x => x.id === editBtn.dataset.sEdit);
+      if (it) { editingShortcutId = it.id; $("shortcutNameInput").value = it.name; $("shortcutUrlInput").value = it.url; $("shortcutFormTitle").textContent = "Edit Shortcut"; $("saveShortcut").textContent = "Update"; updateShortcutPreview(); openShortcutModal(); }
     }
-  });
-  $("cancelEdit").addEventListener("click", resetEventForm);
+    if (delBtn && confirm("Delete shortcut?")) { customShortcuts = customShortcuts.filter(x => x.id !== delBtn.dataset.sDel); saveShortcuts(); renderShortcutSettings(); renderShortcuts(); }
+  };
+  $("cancelShortcutEdit").onclick = closeShortcutModal;
 
-  /* Shortcut form */
-  function resetShortcutForm() { editingShortcutId = null; $("shortcutForm").reset(); $("shortcutFormTitle").textContent = "Add a shortcut"; $("saveShortcut").textContent = "Add shortcut"; $("cancelShortcutEdit").hidden = true; $("shortcutStatus").textContent = ""; updateShortcutPreview(); }
-  $("shortcutForm").addEventListener("submit", function (event) {
-    event.preventDefault();
-    const rawUrl = $("shortcutUrlInput").value.trim(), url = normalizeUrl(rawUrl), customName = $("shortcutNameInput").value.trim();
-    if (!url) { $("shortcutStatus").textContent = "Enter a valid website URL."; $("shortcutUrlInput").focus(); return; }
-    const domain = getDomain(url), name = customName || domain;
-    if (name.length > 50) { $("shortcutStatus").textContent = "Shortcut name must be 50 characters or fewer."; $("shortcutNameInput").focus(); return; }
+  /* Backup & UI Listeners */
+  $("exportBtn").onclick = () => {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify({ version: 3, events, shortcuts: customShortcuts })], { type: "application/json" }));
+    a.download = "homepage-backup.json"; a.click();
+  };
+  $("importBtn").onclick = () => $("importFile").click();
+  $("importFile").onchange = async e => {
+    const f = e.target.files?.[0]; if (!f) return;
+    try { const p = JSON.parse(await f.text()); events = normalizeEvents(p.events || p); customShortcuts = normalizeShortcuts(p.shortcuts || []); saveEvents(); saveShortcuts(); renderHome(); renderManage(); renderShortcutSettings(); } catch {} e.target.value = "";
+  };
 
-    if (editingShortcutId) customShortcuts = customShortcuts.map(shortcut => shortcut.id === editingShortcutId ? { ...shortcut, name, url } : shortcut);
-    else customShortcuts.push({ id: createId(), name, url });
-
-    if (saveShortcuts()) { resetShortcutForm(); renderShortcutSettings(); renderShortcuts(); $("shortcutStatus").textContent = "Shortcut saved successfully."; }
-  });
-
-  $("shortcutSettingsList").addEventListener("click", function (event) {
-    const editButton = event.target.closest("[data-shortcut-edit]"), deleteButton = event.target.closest("[data-shortcut-delete]");
-    if (editButton) {
-      const shortcut = customShortcuts.find(item => item.id === editButton.dataset.shortcutEdit);
-      if (!shortcut) return;
-      editingShortcutId = shortcut.id; $("shortcutNameInput").value = shortcut.name; $("shortcutUrlInput").value = shortcut.url;
-      $("shortcutFormTitle").textContent = "Edit shortcut"; $("saveShortcut").textContent = "Save changes"; $("cancelShortcutEdit").hidden = false; updateShortcutPreview(); $("shortcutNameInput").focus();
-    }
-    if (deleteButton) {
-      const shortcut = customShortcuts.find(item => item.id === deleteButton.dataset.shortcutDelete);
-      if (!shortcut) return;
-      if (!confirm(`Delete shortcut "${shortcut.name}"?`)) return;
-      customShortcuts = customShortcuts.filter(item => item.id !== shortcut.id);
-      if (saveShortcuts()) { renderShortcutSettings(); renderShortcuts(); $("shortcutStatus").textContent = "Shortcut deleted successfully."; }
-    }
-  });
-  $("cancelShortcutEdit").addEventListener("click", resetShortcutForm);
-
-  /* Backup & Restore (also pushes to firebase) */
-  $("exportBtn").addEventListener("click", function () {
-    const backup = { version: 2, exportedAt: new Date().toISOString(), events, shortcuts: customShortcuts };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url; link.download = "homepage-backup.json"; document.body.appendChild(link); link.click(); link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000); $("backupStatus").textContent = "Backup exported successfully.";
-  });
-
-  $("importBtn").addEventListener("click", function () { $("importFile").click(); });
-  $("importFile").addEventListener("change", async function (event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const parsed = JSON.parse(await file.text());
-      const incomingEvents = normalizeEvents(Array.isArray(parsed) ? parsed : parsed.events || []);
-      const incomingShortcuts = normalizeShortcuts(Array.isArray(parsed) ? [] : parsed.shortcuts || []);
-      if (!confirm(`Import ${incomingEvents.length} event(s) and ${incomingShortcuts.length} custom shortcut(s)? This will replace your current events and custom shortcuts.`)) return;
-      
-      events = incomingEvents; customShortcuts = incomingShortcuts;
-      if (saveEvents() && saveShortcuts()) { renderHome(); renderManage(); renderShortcutSettings(); $("backupStatus").textContent = "Backup imported successfully."; }
-    } catch (error) { $("backupStatus").textContent = error.message || "Unable to import this backup."; }
-    finally { event.target.value = ""; }
-  });
-
-  /* Listeners & Utilities */
-  $("manageEvents").addEventListener("click", openManager); $("manageShortcuts").addEventListener("click", openManager); $("backHome").addEventListener("click", closeManager);
-  $("countdown").addEventListener("click", function () { if ($("countdown").classList.contains("empty-state")) openManager(); });
-  $("countdown").addEventListener("keydown", function (event) { if (event.target === $("countdown") && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); openManager(); } });
-  document.addEventListener("keydown", function (event) { if (event.key === "Escape" && $("managerPage").classList.contains("active")) closeManager(); });
+  $("openSettings").onclick = openManager; 
+  $("backHome").onclick = closeManager;
+  $("countdown").onclick = () => { if ($("countdown").classList.contains("empty-state")) openEventModal(); };
 
   function updateClock() {
-    const now = new Date(), hour = now.getHours();
-    $("greeting").textContent = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
-    $("dateLabel").textContent = now.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+    const now = new Date(), hr = now.getHours();
+    $("greeting").textContent = hr < 12 ? "Good morning" : hr < 18 ? "Good afternoon" : "Good evening";
+    $("dateLabel").textContent = now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
     renderHome();
   }
 
-  /* 4. EXECUTION ORDER - GUARANTEEING CACHE-FIRST RENDERING */
-  
-  // A. Load completely from synchronous LocalStorage instantly
-  load(); 
-  $("eventDateInput").value = dateToday();
-  updateShortcutPreview();
-  updateClock();
-  
-  // B. Mount all DOM nodes instantly with cached data before DB even loads
-  renderManage();
-  renderShortcutSettings();
-  renderShortcuts(); 
+  /* App Init */
+  load(); $("eventDateInput").value = dateToday(); updateShortcutPreview(); updateClock(); renderManage(); renderShortcutSettings(); renderShortcuts();
   setInterval(updateClock, 60000);
-
-  // C. Start Firebase background connection logic (Deferred)
   initFirebaseSync();
-
 </script>
 </body>
 </html>
